@@ -1,0 +1,43 @@
+services:
+  db:
+    image: postgres:15
+    container_name: tour_db
+    environment:
+      POSTGRES_DB: tour_booking
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7
+    container_name: tour_redis
+    ports:
+      - "6379:6379"
+
+  backend:
+    build: .
+    container_name: tour_backend
+    env_file:
+      - .env
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=development
+    command: ["node", "dist/main.js"]
+
+volumes:
+  pgdata:

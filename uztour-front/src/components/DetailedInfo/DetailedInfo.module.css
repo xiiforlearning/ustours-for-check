@@ -1,0 +1,9 @@
+.title{
+    color: #242D3F;
+    font-size: 30px;
+    font-weight: 700;
+    margin-bottom: 30px;
+}
+.detailed{
+    flex: 2;
+}

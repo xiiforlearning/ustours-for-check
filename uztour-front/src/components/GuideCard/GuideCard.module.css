@@ -1,0 +1,100 @@
+.conatiner{
+    flex: 1;
+}
+.top,.bottom{
+    padding: 15px;
+    background-color: #fff;
+    border-radius: 12px;
+}
+.guidePhotoBlock{
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    margin-bottom: 18px;
+
+}
+.guidePhoto{
+    width: 75px;
+    height: 75px;
+    border-radius: 100px;
+    overflow: hidden;
+}
+.ratingContent{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.ratingValue{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 5px;
+}
+.rating{
+    color: #242D3F;
+    font-weight: 500;
+    font-size: 16px;
+    font-family: "Manrope", sans-serif;
+}
+
+.dott{
+    width: 4px;
+    height: 4px;
+    border-radius: 100px;
+    background-color: #848484;
+    margin: 0 5px;
+    opacity: 0.2;
+}
+.guideName{
+    color: #242D3F;
+    font-size: 22px;
+    font-weight: 700;
+}
+.guideNameBlock{
+    padding: 8px 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 6px;
+}
+.features{
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-bottom: 6px;
+}
+.featuresText{
+    color: #242D3F;
+    font-size: 16px;
+}
+.link{
+    color: #328AEE;
+}
+
+.bottom{
+        background-image: repeating-linear-gradient(to right, black 0 10px, transparent 10px 20px);
+    background-position: top;
+    background-repeat: repeat-x;
+    background-size: auto 1.5px;
+}
+
+.description{
+    color: #242D3F;
+    line-height: 140%;
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+.secondatyBtn{
+    padding: 14px 26px;
+    background-color: #E1EFFF;
+    border-radius: 8px;
+    width: fit-content;
+    display: block;
+    
+}
+
+.secondatyBtnText{
+    color: #328AEE;
+    font-size: 16px;
+}

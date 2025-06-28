@@ -1,0 +1,32 @@
+.imageBack{
+    background-image: url('/images/transfer_back.jpg');
+    width: 100%;
+    height: 547px;
+    background-size: cover;
+    background-position: center;
+}
+.overlay{
+    width: 100%;
+    height: 100%;
+    background-color: #00000066;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.title{
+    color: #fff;
+    font-weight: 700;
+    font-size: 46px;
+    font-family: 'Manrope', sans-serif;
+    width: 800px;
+    text-align: center;
+}
+.label{
+    font-size: 18px;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 700;
+    color: #fff;
+    text-align: center;
+    margin-top: 10px;
+
+}

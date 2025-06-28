@@ -1,0 +1,23 @@
+.container{
+    width: 100%;
+    aspect-ratio: 1144/440;
+    border-radius: 20px;
+    overflow: hidden;
+    display: flex;
+    gap: 4px;
+    margin-top: 24px;
+}
+.mainImage{
+    width: calc(50% - 2px);
+    height: 100%;
+}
+.grid{
+    flex-wrap: wrap;
+    height: 100%;
+    display: flex;
+    gap: 4px;
+
+}
+.photo{
+    width: calc(50% - 2px);
+}

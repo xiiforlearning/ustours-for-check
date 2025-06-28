@@ -1,0 +1,43 @@
+.container{
+    max-width: 1148px;
+    width: 100%;
+    flex: 1;
+    margin: 0 auto;
+}
+.header{
+    display: flex;
+    align-items: center;
+    margin-top: 24px;
+    margin-bottom: 30px;
+    gap: 5px;
+}
+.headerText{
+    font-size: 16px;
+    color: #848484;
+}
+.back{
+    padding: 10.5px;
+    border: 1px solid #DDDDDD;
+    background-color: #fff;
+    width:fit-content;
+    display: flex;
+    align-items: center;
+    border-radius: 8px;
+    gap: 3px;
+    cursor: pointer;
+}
+.backText{
+    font-size: 16px;
+    color: #242D3F;
+}
+.title{
+    color: #000;
+    font-weight: 700;
+    font-size: 30px;
+    margin-top: 16px;
+    margin-bottom: 24px;
+}
+.content{
+    display: flex;
+    gap: 30px;
+}

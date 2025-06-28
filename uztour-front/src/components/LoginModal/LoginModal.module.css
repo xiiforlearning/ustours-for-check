@@ -1,0 +1,281 @@
+.overlay{
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal{
+    width: 378px;
+    padding: 20px;
+    box-shadow: 0 4px 20px 0 rgba(0, 0, 0, .08);
+    background-color: #fff;
+    border-radius: 20px;
+    z-index: 2;
+}
+.header{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+.side{
+    width: 32px;
+    height: 32px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.title{
+    color: #242D3F;
+    font-size: 18px;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 500;
+}
+.tab{
+    background-color: #F5F5F5;
+    border-radius: 100px;
+    cursor: pointer;
+    height: 44px;
+    border: 1px solid #DDDDDD;
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+}
+.tabText{
+    font-size: 14px;
+    font-family: 'Manrope', sans-serif;
+    flex: 1;
+    text-align: center;
+    z-index: 2;
+    height: 100%;   
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.back{
+    position: absolute;
+    width: 50%;
+    height: 100%;
+    background-color: #fff;
+    border-radius: 100px;
+    z-index: 1;
+    transition: all 0.3s ease-in-out;
+}
+.inputContainer{
+    height: 46px;
+    border: 1px solid #DDDDDD;
+    position: relative;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+}
+.input{
+    width: 100%;
+    height: 100%;
+    outline: none;
+    border: none;
+    background-color: transparent;
+    padding-left: 45px;
+    font-size: 16px;
+    font-family: 'Manrope', sans-serif;
+    color: #242D3F;
+}
+.input::placeholder{
+    color: #848484;
+}
+.emailIcon{
+    position: absolute;
+    left: 14px;
+}
+
+
+.socials{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+    margin-top: 14px;
+}
+.loginBySocial{
+    color: #848484;
+    font-family: 'Manrope', sans-serif;
+    font-size: 14px;
+    margin: 0 10px;
+}
+.line1{
+    flex: 1;
+    height: 1px;
+    background-color: #DDDDDD;
+}
+.socialsContainer{
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+.socialsItem{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 50px;
+    border-radius: 8px;
+    border: 1px solid #DDDDDD;
+    cursor: pointer;
+    flex: 1;
+}
+.signup{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    height: 20px;
+    margin-top: 15px;
+    gap: 5px;
+}
+
+.signupText,.signupText2{
+    color: #848484;
+    font-family: 'Manrope', sans-serif;
+    font-size: 14px;
+}
+
+.signupText2{
+    cursor: pointer;
+    color: #328AEE;
+    font-weight: 500;
+}
+.link{
+    color: #328AEE;
+    cursor: pointer;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 500;
+}
+.agreementText{
+    color: #848484;
+    font-family: 'Manrope', sans-serif;
+    font-size: 12px;
+    text-align: center;
+    margin-top: 10px;
+}
+
+.errorBlock{
+    display: flex;
+    gap: 5px;
+    margin-bottom: 10px;
+    align-items: center;
+}
+.errorText{
+    color: #EB5757;
+    font-family: 'Manrope', sans-serif;
+    font-size: 12px;
+    font-family: 600;
+}
+.comfirmationText{
+    color: #848484;
+    font-family: 'Manrope', sans-serif;
+    font-size: 14px;
+    text-align: center;
+    line-height: 140%;
+}
+.changeEmail{
+    text-align: center;
+    color: #328AEE;
+    cursor: pointer;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 500;
+    margin-top: 5px;
+}
+
+.enterCode{
+    font-size: 15px;
+    color: #242D3F;
+    line-height: 140%;
+    margin-top: 10px;
+    text-align: center;
+}
+
+.otpInput{
+    width: 48px !important;
+    height: 48px;
+    background-color: #fff;
+    border: 1px solid #DDDDDD;
+    border-radius: 8px;
+    color: #242D3F;
+    outline: none;
+    font-size: 16px;
+    font-family: 'Manrope', sans-serif;
+}
+.errorCode{
+    text-align: center;
+    margin: 15px 0;
+    height: 14px;
+}
+
+.timerBtn{
+    background-color: #F5F5F5;
+    height: 50px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 14px;
+    margin-top: 14px;
+    cursor: pointer;
+}
+
+.timerText{
+    color: #848484;
+    font-size: 16px;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 500;
+}
+
+.guideFormModal{
+    width: 672px;
+    height: 486px;
+}
+.guideText{
+    color: #848484;
+    font-size: 16px;
+    text-align: center;
+    margin-top: -10px;
+}
+.fieldWrapper{
+    width: 100%;
+    display: flex;
+    gap: 12px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+}
+.area{
+    width: calc(50% - 6.5px);
+}
+.line{
+    width: 632px;
+    background-color: #DDDDDD;
+    height: 1px;
+    border-radius: 100px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    flex: none;
+}
+
+.policy{
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.policyText{
+    font-size: 12px;
+    color: #242D3F;
+}
+.policyText span{
+    color: #328AEE;
+}

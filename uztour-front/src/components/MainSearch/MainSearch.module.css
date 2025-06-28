@@ -1,0 +1,118 @@
+.mainSearch{
+    width: fit-content;
+    height: 66px;
+    background-color: #fff;
+    margin: 0 auto;
+    margin-top: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+}
+.selectCity{
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    gap: 5px;
+    padding-right: 15px;
+    position: relative;
+}
+
+.searchText{
+    color: #848484;
+    font-size: 16px;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 500;
+    width: 126px;
+}
+.selectDate{
+    padding: 0 15px;
+    height: 36px;
+    border-left: #DDDDDD 1px solid;
+    border-right: #DDDDDD 1px solid;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    gap: 8px;
+    position: relative;
+}
+.selectExcursion{
+    padding: 0 15px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    gap: 5px;
+    position: relative;
+}
+.btn{
+    background-color: #328AEE;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    gap: 5px;
+    padding: 0 10px;
+}
+.btnText{
+    color: #fff;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+
+.modal{
+    background-color: #fff;
+    display: flex;
+    z-index: 10;
+    position: absolute;
+    padding: 8px;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px 0 rgba(0, 0, 0, .08);
+    width: calc(100% + 20px);
+    left: -20px;
+    top: 48px;
+    gap: 5px;
+}
+.modalType{
+    background-color: #fff;
+    display: flex;
+    z-index: 10;
+    position: absolute;
+    padding: 8px;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px 0 rgba(0, 0, 0, .08);
+    width: 100%;
+    left: 0px;
+    top: 55px;
+    gap: 5px;
+}
+.cityWrapper{
+    display: flex;
+    flex-direction: column;
+    padding-left: 10px;
+    width: 100%;
+}
+.city{
+    font-size: 16px;
+    color: #000;
+    
+    transition: 0.3s ease-in-out;
+    line-height: 160%;
+}
+.city:hover{
+    color: #328AEE;
+}
+
+.calendarWrapper{
+    position: absolute;
+    opacity: 0;
+    /* display: none; */
+}
+
+.calendarWrapper input{
+    cursor: pointer;
+}

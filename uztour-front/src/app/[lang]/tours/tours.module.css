@@ -1,0 +1,31 @@
+.header{
+    display: flex;
+    align-items: center;
+    margin-top: 24px;
+    margin-bottom: 30px;
+    gap: 5px;
+}
+.headerText{
+    font-size: 16px;
+    color: #848484;
+}
+.container{
+    flex:1;
+    padding: 0 20px;
+}
+.wrapper{
+    width: 100%;
+    max-width: 1143px;
+    margin: 0 auto;
+}
+.title{
+    font-weight: 700;
+    color: #242D3F;
+    font-size: 30px;
+    margin-bottom: 8px;
+}
+.count{
+    color: #242D3F;
+    font-size: 18px;
+
+}

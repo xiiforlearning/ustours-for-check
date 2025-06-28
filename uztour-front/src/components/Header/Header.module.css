@@ -1,0 +1,238 @@
+.header{
+    height: 60px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 1144px;
+}
+
+
+.wrapper{
+    background-color: #fff;
+    border-bottom: 1px solid #eee;
+    width: 100%;
+    height: 60px;
+}
+
+.logo{
+    font-size: 22px;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 600;
+    color: #0099FF;
+}
+.logo span{
+    color: #0099FF;
+}
+.leftSide{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 15px;
+}
+
+.login{
+    border-radius:99rem;
+    display: flex;
+    height: 36px;
+    align-items: center;   
+    background: #0099FF;
+    cursor: pointer;
+}
+
+.btn{
+    border-radius:8px;
+    display: flex;
+    height: 37px;
+    align-items: center;   
+    cursor: pointer;
+    background-color: #fff;
+    transition: all 0.2s ease-in-out;
+}
+.btn:hover{
+    background-color: #DDDDDD;
+}
+.center{
+    gap: 16px;
+    display: flex;
+    align-items: center;
+}
+
+.langContent{
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    margin: 0 10px;
+    white-space: nowrap;
+}
+.dropDown{
+    margin-left: 4px;
+}
+.btnText{
+    font-family: 'Manrope', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: #333;
+}
+.loginText{
+    font-weight: 600;
+    font-family: 'Manrope', sans-serif;
+    font-size: 12px;
+    color: #333;
+}
+.loginTextActive{
+    font-weight: 600;
+    font-family: 'Manrope', sans-serif;
+    font-size: 12px;
+    color: #fff;
+}
+.avatar{
+    border-radius: 100%;
+    margin-left: 10px;
+    width: 36px;
+    height: 36px;
+    border-radius: 100px;
+    background-color: #0FA53A;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    position: relative;
+}
+
+.mainBtn{
+    height: 36px;
+    padding: 0 15px;
+    background-color: #328AEE;
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+}
+.secondaryBtn{
+    height: 36px;
+    padding: 0 15px;
+    background-color: #E1EFFF;
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+}
+.secondaryBtnText{
+    font-weight: 500;
+    font-family: 'Manrope', sans-serif;
+    font-size: 16px;
+    color: #328AEE;
+}
+
+.mainBtnText{
+    font-weight: 500;
+    font-family: 'Manrope', sans-serif;
+    font-size: 16px;
+    color: #fff;
+}
+.currencyText{
+    color: #848484;
+    font-size: 16px;
+    font-family: 'Manrope', sans-serif;
+}
+
+.links{
+    color: #000;
+    font-size: 16px;
+    font-family: 'Manrope', sans-serif;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease-in-out;
+}
+
+.links:hover{
+    color: #328AEE;
+}
+
+.btnContainer{
+    position: relative;
+}
+
+.currencyList,.langList{
+    position: absolute;
+    width:max-content;
+    top: 60px;
+    background-color: #fff;
+    padding: 12px 0;
+    border-radius: 8px;
+    gap: 10px;
+    display: flex;
+    flex-direction: column;
+    left: 50%; 
+    transform: translateX(-50%); 
+}
+
+
+.currencyItem{
+    padding: 0 10px;
+    display: flex;
+    cursor: pointer;
+    align-items: center;
+
+}
+.currencyItem:hover .currencyName {
+    color: #328AEE;
+}
+.currencyItem:hover .currencyText {
+    color: #328AEE;
+}
+.currencyName{
+    margin-right: 20px;
+    color: #BBBBBB;
+    font-size: 16px;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 500;
+    transition: all 0.1s ease-in-out;
+}
+.currencyText{
+    color: #242D3F;
+    font-size: 16px;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 500;
+    transition: all 0.1s ease-in-out;
+}
+.langFlag{
+    margin-right: 10px;
+}
+.avatarText{
+    color: #fff;
+    font-size: 16px;
+    text-transform: uppercase;
+}
+.menu{
+    position: absolute;
+    width: 208px;
+    border-radius: 12px;
+    background-color: #fff;
+    top: 53px;
+    right: -60px;
+}
+.menuItem,.menuItemBorder{
+    height: 50px;
+    padding-left: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.menuItemText{
+    color: #848484;
+    font-size: 16px;
+}
+
+.menuItemBorder{
+    border-bottom-width: 1px;
+    border-top-width: 1px;
+    border-bottom-color:#e1e1e1 ;
+    border-top-color: #e1e1e1;
+    border-top-style: solid;
+    border-bottom-style:solid ;
+}

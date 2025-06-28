@@ -1,0 +1,100 @@
+.container{
+    margin-top: 24px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.item{
+    background-color: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    justify-content: space-between;
+}
+.left{
+    display: flex;
+    align-items: stretch;
+    gap: 24px;
+}
+.carImage{
+    width: 212px;
+    object-fit: contain;
+    height: 135px;
+}
+.info{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 10px;
+    flex: 1;
+}
+.topInfo{
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+.name{
+    color: #242D3F;
+    font-size: 18px;
+}
+.infoItem{
+    display: flex;
+    height: 32px;
+    background-color: #F5F5F5;
+    gap: 5px;
+    justify-content: center;
+    align-items: center;
+    border-radius: 8px;
+    padding: 0 6px;
+}
+
+.infoItemText{
+    color: #848484;
+    font-size: 14px;
+}
+
+.features{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.feature{
+    background-color: #E6FFE1;
+    height: 32px;
+    padding: 0 6px;
+    display: flex;
+    align-items: center;
+    border-radius: 8px;
+    gap: 8px;
+}
+.featureText{
+    color: #0FA53A;
+}
+.moreInfo{
+    display: flex;
+    align-items: center;
+}
+
+.moreInfoText{
+    color: #328AEE;
+    font-size: 14px;
+    line-height: 140%;
+    text-decoration: underline;
+}
+
+.priceContent{
+    height: 144px;
+    width: 173px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+.price{
+    color: #328AEE;
+    font-weight: 700;
+    font-size: 22px;
+}

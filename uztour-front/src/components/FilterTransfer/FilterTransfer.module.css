@@ -1,0 +1,42 @@
+.selectContent{
+    padding: 20px;
+    background-color: #FFFFFF;
+    display: flex;
+    gap: 16px;
+    border-radius: 12px;
+    width: fit-content;
+}
+.select{
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    cursor: pointer;
+}
+.selectText{
+    color: #242D3F;
+    font-size: 16px;
+}
+.circleBorder{
+    width: 24px;
+    height: 24px;
+    border-radius: 100px;
+    border: 2px solid #328AEE;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.circle{
+    width: 12px;
+    height: 12px;
+    border-radius: 100px;
+    background-color: #328AEE;
+}
+.filter{
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 12px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-end;
+    margin-top: 8px;
+}

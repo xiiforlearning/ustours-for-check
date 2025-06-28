@@ -1,0 +1,74 @@
+:root {
+  --background: #f5f5f5;
+  --foreground: #212121;
+}
+
+
+@font-face {
+  font-family: 'Manrope';
+  src: url('/fonts/Manrope-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+}
+
+
+@font-face {
+  font-family: 'Manrope';
+  src: url('/fonts/Manrope-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+}
+
+
+
+
+
+
+
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  max-width: 100vw;
+  overflow-x: hidden;
+  font-family: 'Manrope', sans-serif;
+  margin: 0px;
+  height: 100vh;
+  display: flex;
+  justify-content: space-between;
+  flex-direction: column;
+}
+
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+  font-family: 'Manrope', sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  html {
+    color-scheme: dark;
+  }
+}
+
+
+
+
+.css-ptck8z-MuiButtonBase-root-MuiPaginationItem-root.Mui-selected {
+  background-color: #328AEE !important;
+  color: #fff !important;
+  border: none !important;
+}
+.css-ptck8z-MuiButtonBase-root-MuiPaginationItem-root{
+  color: #848484 !important;
+  border: none !important;
+  background-color: #fff !important;
+}
