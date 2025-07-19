@@ -35,3 +35,11 @@
     align-items: center;
     width: fit-content;
 }
+
+@media (max-width:600px) {
+    .features{
+        flex-direction: column;
+        gap: 10px;
+    }
+   
+}

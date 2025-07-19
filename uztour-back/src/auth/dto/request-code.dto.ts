@@ -4,11 +4,11 @@ import { ApiProperty } from '@nestjs/swagger';
 export class RequestCodeDto {
   @ApiProperty({ description: 'User email' })
   @IsEmail()
-  email: string;
+  email!: string;
 
   @ApiProperty({ enum: ['customer', 'partner'], description: 'User type' })
   @IsEnum(['customer', 'partner'])
-  type: 'customer' | 'partner';
+  type!: 'customer' | 'partner';
 
   @ApiProperty({ required: false, description: 'Phone number (for partner)' })
   @IsOptional()

@@ -20,10 +20,38 @@
 }
 
 
+.css-13cymwt-control,.css-t3ipsp-control{
+  min-height: 46px !important;
+  background-color: #fafafa !important;
+}
+
+.rdp-root {
+  --rdp-accent-color: #328AEE !important; /* Change the accent color to indigo. */
+  --rdp-accent-background-color: #f0f0f0; /* Change the accent background color. */
+  /* Add more CSS variables here. */
+}
+
+
+.rdp-range_start button{
+  border-top-left-radius:12px !important;
+  border-bottom-left-radius:12px !important;
+  border-top-right-radius: 0 ;
+  border-bottom-right-radius: 0 ;
+}
+
+.ymaps-2-1-79-searchbox-input__input{
+  color: #000;
+}
 
 
 
 
+.rdp-range_end button{
+  border-top-left-radius:0px;
+  border-bottom-left-radius:0px  ;
+  border-top-right-radius: 12px ;
+  border-bottom-right-radius: 12px ;
+}
 
 
 body {

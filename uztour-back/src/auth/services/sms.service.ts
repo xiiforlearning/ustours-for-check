@@ -14,13 +14,11 @@ export class SmsService {
       specialChars: false
     });
 
-    // В реальном приложении здесь будет интеграция с SMS-сервисом
     console.log(`SMS OTP to ${phone}: ${code}`);
     return code;
   }
 
   async verifySmsOTP(phone: string, code: string, storedCode: string): Promise<boolean> {
-    // В реальном приложении здесь будет проверка через SMS-сервис
     return code === storedCode;
   }
 }

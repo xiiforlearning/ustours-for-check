@@ -8,9 +8,8 @@ import {
   Query,
   Req,
   UseGuards,
-  HttpCode,
-  HttpStatus,
   BadRequestException,
+  Delete,
 } from '@nestjs/common';
 import { ToursService } from './tours.service';
 import { CreateTourDto } from './dto/create-tour.dto';
@@ -18,6 +17,7 @@ import { TourFiltersDto } from './dto/tour-filters.dto';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse, ApiBody, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UsersService } from '../users/users.service';
+import { CurrencyService } from '../currency/currency.service';
 
 @ApiTags('Tours - Управление турами')
 @Controller('tours')
@@ -25,6 +25,7 @@ export class ToursController {
   constructor(
     private readonly toursService: ToursService,
     private readonly usersService: UsersService,
+    private readonly currencyService: CurrencyService,
   ) {}
 
   @Post()
@@ -64,16 +65,13 @@ export class ToursController {
   })
   @ApiResponse({ status: 400, description: 'Неверные данные' })
   @ApiResponse({ status: 401, description: 'Не авторизован' })
+  @ApiResponse({ status: 404, description: 'Партнёр не найден' })
   async create(@Req() req, @Body() createTourDto: Omit<CreateTourDto, 'partner_id'>) {
-    let partner_id = req.user.partnerId || req.user.partner_id;
-    if (!partner_id && req.user.email) {
-      const user = await this.usersService.findByEmail(req.user.email);
-      partner_id = user?.partner?.id;
+    const userId = req.user.sub || req.user.id;
+    if (!userId) {
+      throw new BadRequestException('User ID not found in JWT');
     }
-    if (!partner_id) {
-      throw new BadRequestException('Partner ID not found in JWT or user profile');
-    }
-    return this.toursService.create({ ...createTourDto, partner_id });
+    return this.toursService.create(createTourDto, userId);
   }
 
   @Get()
@@ -165,6 +163,12 @@ export class ToursController {
     type: Number,
     description: 'Количество элементов на странице'
   })
+  @ApiQuery({
+    name: 'currency',
+    required: false,
+    type: String,
+    description: 'Код валюты для пересчёта цен (например, USD, EUR, RUB, UZS)'
+  })
   @ApiResponse({ 
     status: 200, 
     description: 'Список туров получен успешно',
@@ -193,8 +197,12 @@ export class ToursController {
       }
     }
   })
-  async findAll(@Query() filters: TourFiltersDto, @Query('partner_id') partner_id?: string) {
-    return this.toursService.findAll(filters, partner_id);
+  async findAll(
+    @Query() filters: TourFiltersDto,
+    @Query('partner_id') partner_id?: string,
+    @Query('currency') currency?: string
+  ) {
+    return this.toursService.findAll(filters, partner_id, currency);
   }
 
   @Get(':id')
@@ -284,8 +292,11 @@ export class ToursController {
     description: 'Тур с указанным ID не найден' 
   })
   async update(@Req() req, @Param('id') id: string, @Body() updateTourDto: Partial<CreateTourDto>) {
-    const partner_id = req.user.partnerId || req.user.partner_id || req.user.sub;
-    return this.toursService.update(id, updateTourDto, partner_id);
+    const userId = req.user.sub || req.user.id;
+    if (!userId) {
+      throw new BadRequestException('User ID not found in JWT');
+    }
+    return this.toursService.update(id, updateTourDto, userId);
   }
 
   @Patch(':id/availability')
@@ -372,8 +383,36 @@ export class ToursController {
     description: 'Тур с указанным ID не найден' 
   })
   async updateAvailability(@Req() req, @Param('id') id: string, @Body() updateDto: { availability: any[] }) {
-    const partner_id = req.user.partnerId || req.user.partner_id || req.user.sub;
-    return this.toursService.updateAvailability(id, updateDto.availability, partner_id);
+    const userId = req.user.sub || req.user.id;
+    if (!userId) {
+      throw new BadRequestException('User ID not found in JWT');
+    }
+    return this.toursService.updateAvailability(id, updateDto.availability, userId);
+  }
+
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Удалить тур',
+    description: 'Удаляет тур по ID. Только автор тура (партнёр) может удалить свой тур.'
+  })
+  @ApiParam({
+    name: 'id',
+    type: 'string',
+    description: 'Уникальный идентификатор тура для удаления',
+    example: '881d9cbe-272b-4ad1-9c0b-e701870691b1'
+  })
+  @ApiResponse({ status: 204, description: 'Тур успешно удалён' })
+  @ApiResponse({ status: 401, description: 'Не авторизован - требуется JWT токен' })
+  @ApiResponse({ status: 403, description: 'Нет прав на удаление этого тура - можно удалять только свои туры' })
+  @ApiResponse({ status: 404, description: 'Тур с указанным ID не найден' })
+  async remove(@Req() req, @Param('id') id: string) {
+    const userId = req.user.sub || req.user.id;
+    if (!userId) {
+      throw new BadRequestException('User ID not found in JWT');
+    }
+    await this.toursService.remove(id, userId);
   }
 
   @Get('popular')
@@ -441,5 +480,10 @@ export class ToursController {
   })
   async getLanguages() {
     return this.toursService.getLanguages();
+  }
+
+  @Get(':id/price')
+  async getTourPrice(@Param('id') id: string, @Query('currency') currency: string = 'UZS') {
+    return this.toursService.getTourPrice(id, currency);
   }
 }

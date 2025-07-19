@@ -3,13 +3,17 @@ import Calendar from "./Calendar";
 import classes from "./MainSearch.module.css";
 import Select from "./Select";
 import TypeExcursion from "./TypeExcursion";
+import { Dict } from "@/types";
 
-function MainSearch() {
+function MainSearch({ dict }: { dict: Dict }) {
   return (
     <div className={classes.mainSearch}>
-      <Select />
-      <Calendar />
-      <TypeExcursion />
+      <div className={classes.searchTop}>
+        <Select dict={dict} />
+        <Calendar dict={dict} />
+      </div>
+
+      <TypeExcursion dict={dict} />
       <Link href={"/tours"} className={classes.btn}>
         <svg
           width="16"
@@ -25,7 +29,7 @@ function MainSearch() {
             fill="white"
           />
         </svg>
-        <p className={classes.btnText}>Поиск</p>
+        <p className={classes.btnText}>{dict["search2"]}</p>
       </Link>
     </div>
   );

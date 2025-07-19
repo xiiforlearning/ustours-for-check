@@ -6,12 +6,22 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Login from "./Login";
 import Comfirmation from "./Comfirmation";
 import GuideForm from "./GuideForm";
-import { GuideSubmitData } from "@/types";
+import { Dict, GuideSubmitData } from "@/types";
 import { authUser, completeGuideData, verifyCode, verifyPhone } from "@/api";
 import axios, { AxiosError } from "axios";
 import useStore from "@/store/useStore";
+import { Locale } from "@/i18n-config";
+import { API } from "@/http-client";
 
-function LoginModal({ router }: { router: AppRouterInstance }) {
+function LoginModal({
+  router,
+  dict,
+  lang,
+}: {
+  router: AppRouterInstance;
+  dict: Dict;
+  lang: Locale;
+}) {
   const searchParams = useSearchParams();
   const modalRef = useRef<HTMLDivElement>(null);
   const setUser = useStore((state) => state.setUser);
@@ -66,18 +76,18 @@ function LoginModal({ router }: { router: AppRouterInstance }) {
 
   const submit = async () => {
     if (!email) {
-      setError("Пожалуйста введите свой email");
+      setError(dict["guideform.empty_email"]);
       return;
     }
     const regex =
       /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     if (!regex.test(email)) {
-      setError("Введите корректный email");
+      setError(dict["guideform.right_email"]);
       return;
     }
     setLoading(true);
     try {
-      const res = await authUser({ email, isGuide });
+      const res = await authUser({ email, isGuide, lang });
       setLoading(false);
       if (res.message == "Code sent to email") {
         setError("");
@@ -94,19 +104,27 @@ function LoginModal({ router }: { router: AppRouterInstance }) {
 
   const submitCode = async ({ otp }: { otp: string }) => {
     if (!otp && otp.length < 4) {
-      setError("Введен неверный код, попробуйте снова");
+      setError(dict["guideform.invalid_code"]);
       return;
     }
     setLoading(true);
     try {
       const res = await verifyCode({ email, code: otp, isGuide });
       if ("access_token" in res) {
+        API.defaults.headers.common[
+          "Authorization"
+        ] = `Bearer ${res.access_token}`;
         setUser(res);
         setError("");
         localStorage.setItem("user", JSON.stringify(res));
         closeModal();
-        redirect();
+        if (isGuide == 1) {
+          openProfilePage();
+        } else {
+          redirect();
+        }
       }
+
       if ("status" in res && res.status == "need_profile_completion") {
         if (isGuide == 1) {
           setError("");
@@ -126,7 +144,7 @@ function LoginModal({ router }: { router: AppRouterInstance }) {
 
   const submitGuidePhone = async ({ otp }: { otp: string }) => {
     if (!otp && otp.length < 4) {
-      setError("Введен неверный код, попробуйте снова");
+      setError(dict["guideform.invalid_code"]);
       return;
     }
     setLoading(true);
@@ -137,10 +155,14 @@ function LoginModal({ router }: { router: AppRouterInstance }) {
         smsCode: otp,
       });
       if ("access_token" in data) {
+        API.defaults.headers.common[
+          "Authorization"
+        ] = `Bearer ${data.access_token}`;
         setUser(data);
         setError("");
         localStorage.setItem("user", JSON.stringify(data));
         closeModal();
+        openProfilePage();
       }
     } catch (e) {
       if (e instanceof AxiosError) {
@@ -154,7 +176,7 @@ function LoginModal({ router }: { router: AppRouterInstance }) {
   const resendCode = async () => {
     setLoading(true);
     setError("");
-    await authUser({ email, isGuide });
+    await authUser({ email, isGuide, lang });
     setLoading(false);
   };
   const resendGuideCode = () => {
@@ -169,14 +191,15 @@ function LoginModal({ router }: { router: AppRouterInstance }) {
         ...formData,
       });
       if (res.message == "Profile completed, SMS sent") {
-        setPageType("comfirmationGuidePhone");
-        setError("");
+        // setPageType("comfirmationGuidePhone");
+        // setError("");
       }
     } catch (e) {
       if (e instanceof AxiosError) {
         setError(e.response?.data?.message);
       }
     } finally {
+      await submitGuidePhone({ otp: "1111" });
       setLoading(false);
     }
   };
@@ -212,7 +235,9 @@ function LoginModal({ router }: { router: AppRouterInstance }) {
       );
     }
   };
-
+  const openProfilePage = () => {
+    router.replace(`/${lang}/profile`);
+  };
   return (
     <div>
       <div className={classes.overlay}>
@@ -260,9 +285,9 @@ function LoginModal({ router }: { router: AppRouterInstance }) {
               )}
             </div>
             <h2 className={classes.title}>
-              {pageType == "login" && "Авторизация"}
-              {pageType == "comfirmation" && "Подтверждение"}
-              {pageType == "guideForm" && "Регистрация автора тура"}
+              {pageType == "login" && dict["login.authentication"]}
+              {pageType == "comfirmation" && dict.confirmation}
+              {pageType == "guideForm" && dict["registerAsGuide"]}
             </h2>
             <div
               onClick={closeModal}
@@ -298,6 +323,7 @@ function LoginModal({ router }: { router: AppRouterInstance }) {
               handleChangeEmail={handleChangeEmail}
               setIsGuide={setIsGuide}
               isGuide={isGuide}
+              dict={dict}
               email={email}
               error={error}
               submit={submit}
@@ -309,6 +335,7 @@ function LoginModal({ router }: { router: AppRouterInstance }) {
             <Comfirmation
               resendCode={resendCode}
               submitCode={submitCode}
+              dict={dict}
               error={error}
               loading={loading}
             />
@@ -316,16 +343,19 @@ function LoginModal({ router }: { router: AppRouterInstance }) {
           {pageType === "guideForm" && (
             <GuideForm
               formData={formData}
+              dict={dict}
               setFormData={setFormData}
               submitGuideData={submitGuideData}
               email={email}
+              loading={loading}
             />
           )}
           {pageType === "comfirmationGuidePhone" && (
             <Comfirmation
               resendCode={resendGuideCode}
+              dict={dict}
               loading={loading}
-              title={"Код отправлен на номер телефона"}
+              title={dict["codeSentToPhone"]}
               submitCode={submitGuidePhone}
               error={error}
             />

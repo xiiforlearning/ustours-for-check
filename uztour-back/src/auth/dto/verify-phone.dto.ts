@@ -2,15 +2,15 @@ import { IsEmail, IsPhoneNumber, IsString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class VerifyPhoneDto {
-  @ApiProperty({ description: 'User email' })
+  @ApiProperty()
   @IsEmail()
-  email: string;
+  email!: string;
 
-  @ApiProperty({ description: 'Phone number' })
+  @ApiProperty()
   @IsPhoneNumber()
-  phone: string;
+  phone!: string;
 
-  @ApiProperty({ description: 'SMS code' })
+  @ApiProperty()
   @IsString()
-  smsCode: string;
+  smsCode!: string;
 } 

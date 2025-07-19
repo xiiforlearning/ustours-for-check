@@ -8,6 +8,8 @@ function TextField({
   disabled,
   label,
   isPhone,
+  multiline,
+  inputRef,
 }: {
   svg?: ReactNode;
   placeHolder: string;
@@ -16,8 +18,12 @@ function TextField({
   disabled?: boolean;
   label?: string;
   isPhone?: boolean;
+  multiline?: boolean;
+  inputRef?: React.RefObject<HTMLInputElement | null>;
 }) {
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhoneChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     if (!setValue) {
       return;
     }
@@ -28,10 +34,7 @@ function TextField({
       return;
     }
     const previousValue = value;
-
-    // If user is deleting (input is shorter than previous value)
     if (input.length < previousValue.length) {
-      // Allow deletion but keep the "+998 " prefix
       if (input.startsWith("+998 ") && input.length <= 5) {
         setValue("+998 ");
         return;
@@ -40,10 +43,8 @@ function TextField({
       return;
     }
 
-    // Proceed with formatting for new input
     let numbers = input.replace(/\D/g, "");
 
-    // Limit to 12 digits (998 + 9 digits)
     if (numbers.length > 12) {
       numbers = numbers.substring(0, 12);
     }
@@ -61,6 +62,8 @@ function TextField({
           }
         }
       }
+    } else {
+      formattedInput += numbers;
     }
 
     setValue(formattedInput);
@@ -69,19 +72,35 @@ function TextField({
   return (
     <div className={classes.container}>
       {label && <p className={classes.label}>{label}</p>}
-      <div className={classes.wrapper}>
+      <div style={multiline ? { height: 100 } : {}} className={classes.wrapper}>
         <div className={classes.textFieldIcon}>{svg}</div>
-        <input
-          onChange={handlePhoneChange}
-          placeholder={placeHolder}
-          type="text"
-          style={{
-            paddingLeft: svg ? "44px" : "14px",
-          }}
-          disabled={disabled}
-          value={value}
-          className={classes.input}
-        />
+        {multiline ? (
+          <textarea
+            onChange={handlePhoneChange}
+            placeholder={placeHolder}
+            disabled={disabled}
+            value={value}
+            className={classes.input}
+            style={{
+              resize: "none", // disable resize
+              padding: 15,
+            }}
+            rows={4} // or any number depending on height
+          />
+        ) : (
+          <input
+            type="text"
+            onChange={handlePhoneChange}
+            placeholder={placeHolder}
+            disabled={disabled}
+            ref={inputRef}
+            value={value}
+            className={classes.input}
+            style={{
+              paddingLeft: svg ? "44px" : "14px",
+            }}
+          />
+        )}
       </div>
     </div>
   );

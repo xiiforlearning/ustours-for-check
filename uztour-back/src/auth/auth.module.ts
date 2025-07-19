@@ -40,7 +40,7 @@ import { OtpService } from './services/otp.service';
           },
         },
         defaults: {
-          from: `"Tour Booking" <${configService.get<string>('EMAIL_FROM')}>`,
+          from: `"UzTours Verification" <${configService.get<string>('EMAIL_FROM')}>`,
         },
       }),
       inject: [ConfigService],

@@ -5,34 +5,40 @@ import { useState } from "react";
 import Select from "../ui/Select";
 import Checkbox from "../ui/Checkbox";
 import PrimaryBtn from "../ui/PrimaryBtn";
-import { GuideSubmitData } from "@/types";
+import { Dict, GuideSubmitData } from "@/types";
+import { converFirstLetterToUpperCase } from "@/consts";
 function GuideForm({
   email,
   submitGuideData,
   formData,
   setFormData,
+  dict,
+  loading,
 }: {
   email: string;
   submitGuideData: () => void;
   formData: GuideSubmitData;
   setFormData: (data: GuideSubmitData) => void;
+  dict: Dict;
+  loading: boolean;
 }) {
   const [checked, setChecked] = useState({
     privacy: false,
     agreement: false,
   });
 
-  const options = ["Гид", "Компания"];
+  const options = [
+    converFirstLetterToUpperCase(dict["guide"]),
+    converFirstLetterToUpperCase(dict["company"]),
+  ];
 
   return (
     <>
-      <p className={classes.guideText}>
-        Зарегистрируйтесь для управления своими турами в “UzTours”
-      </p>
+      <p className={classes.guideText}>{dict["registerForManageTours"]}</p>
       <div className={classes.fieldWrapper}>
         <div className={classes.area}>
           <TextField
-            placeHolder="Имя"
+            placeHolder={dict["name"]}
             value={formData.name}
             setValue={(value) => setFormData({ ...formData, name: value })}
             svg={
@@ -53,7 +59,7 @@ function GuideForm({
         </div>
         <div className={classes.area}>
           <TextField
-            placeHolder={"Фамилия"}
+            placeHolder={dict["surname"]}
             value={formData.lastName}
             setValue={(value) => setFormData({ ...formData, lastName: value })}
             svg={
@@ -72,9 +78,9 @@ function GuideForm({
             }
           />
         </div>
-        <div className={classes.area}>
+        <div className={`${classes.area} ${classes.fullArea}`}>
           <TextField
-            placeHolder={"Емейл"}
+            placeHolder={dict["email"]}
             value={email}
             disabled={true}
             svg={
@@ -93,7 +99,7 @@ function GuideForm({
             }
           />
         </div>
-        <div className={classes.area}>
+        <div className={`${classes.area} ${classes.fullArea}`}>
           <TextField
             value={formData.phone}
             isPhone={true}
@@ -107,7 +113,7 @@ function GuideForm({
         <div className={classes.line}></div>
         <div className={classes.area}>
           <Select
-            label="Статус пользователя"
+            label={dict["userStatus"]}
             value={formData.isCompany ? options[1] : options[0]}
             options={options}
             setValue={(value) =>
@@ -118,8 +124,8 @@ function GuideForm({
         <div className={classes.area}>
           {formData.isCompany && (
             <TextField
-              placeHolder={"Введите"}
-              label="Название компании"
+              placeHolder={dict["fill"]}
+              label={dict["companyName"]}
               value={formData.companyName}
               setValue={(value) =>
                 setFormData({ ...formData, companyName: value })
@@ -137,8 +143,11 @@ function GuideForm({
           id="policy1"
         />
         <p className={classes.policyText}>
-          Я принимаю условия <span>Публичной оферты</span>, а также{" "}
-          <span>Договора для организатора</span> платформы UzTours
+          {dict["iAgree"].split("$")[0]}{" "}
+          <span>{dict["iAgree"].split("$")[1]}</span>,{" "}
+          {dict["iAgree"].split("$")[2]}{" "}
+          <span>{dict["iAgree"].split("$")[3]}</span>{" "}
+          {dict["iAgree"].split("$")[4]}
         </p>
       </div>
       <div className={classes.policy}>
@@ -150,11 +159,12 @@ function GuideForm({
           id="policy2"
         />
         <p className={classes.policyText}>
-          Я даю согласие на обработку моих персональных данных в соответствии с
-          <span>Политикой конфиденциальности</span>
+          {dict["iAgreePrivacy"].split("$")[0]}{" "}
+          <span>{dict["iAgreePrivacy"].split("$")[1]}</span>
         </p>
       </div>
       <PrimaryBtn
+        loading={loading}
         disabled={
           !checked.privacy ||
           !checked.agreement ||
@@ -164,7 +174,7 @@ function GuideForm({
           (formData.isCompany && !formData.companyName)
         }
         onClick={() => submitGuideData()}
-        text={"Отправить код для подтверждения"}
+        text={dict["sendCodeForConfirmation"]}
       />
     </>
   );

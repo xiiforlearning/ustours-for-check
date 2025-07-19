@@ -1,10 +1,11 @@
 "use client";
-import { cities, listType } from "@/consts";
+import { cities, langs, listType } from "@/consts";
 import Select from "../ui/Select";
 import classes from "./Filter.module.css";
 import { useState } from "react";
+import { Dict } from "@/types";
 
-function Filter() {
+function Filter({ dict }: { dict: Dict }) {
   const [filterData, setFilterData] = useState({
     city: "",
     type: "",
@@ -13,31 +14,36 @@ function Filter() {
     duration: "",
     sort: "",
   });
-  const listCity = ["Город", ...cities];
-
-  const listLanguage = ["Язык тура", "Русский", "Английский", "Китайский"];
-  const listPrice = ["Цена", "0 - 100 USD", "100-400 USD", "от 400 USD"];
+  const listCity = ["city", ...cities];
+  //@ts-expect-error aaa
+  const listLanguage = langs.map((lang) => dict[lang]);
+  const listPrice = [
+    dict["price"],
+    "0 - 100 USD",
+    "100-400 USD",
+    dict["from2"] + " 400 USD",
+  ];
   const listDuration = [
-    "Длительность",
-    "0-5 часов",
-    "Полный день",
-    "2 дня",
-    "3 дня",
-    "4 дня",
-    "5 дней",
-    "6 дней",
-    "7 дней",
-    "8 дней",
-    "9 дней",
-    "10 дней",
-    "11 дней",
-    "12 дней",
+    dict["duration"],
+    "0-5 " + dict["hour"],
+    dict["fullDay"],
+    "2 " + dict["day"],
+    "3 " + dict["day"],
+    "4 " + dict["day"],
+    "5 " + dict["day"],
+    "6 " + dict["day"],
+    "7 " + dict["day"],
+    "8 " + dict["day2"],
+    "9 " + dict["day2"],
+    "10 " + dict["day2"],
+    "11 " + dict["day2"],
+    "12 " + dict["day2"],
   ];
   const listSort = [
-    "Сортировка",
-    "Сначала популярные",
-    "Сначала дешевле",
-    "Сначала дороже",
+    dict["sort"],
+    dict["fromPopular"],
+    dict["fromCheap"],
+    dict["fromExpensive"],
   ];
 
   return (
@@ -46,7 +52,8 @@ function Filter() {
         <Select
           white
           value={filterData.city ? filterData.city : listCity[0]}
-          options={listCity}
+          //@ts-expect-error aaa
+          options={listCity.map((city) => dict[city])}
           contain={true}
           setValue={(value) =>
             value != listCity[0]
@@ -57,7 +64,10 @@ function Filter() {
         <Select
           white
           value={filterData.type ? filterData.type : listType[0]}
-          options={listType}
+          options={listType.map(
+            //@ts-expect-error aaa
+            (type) => dict[type].charAt(0).toUpperCase() + dict[type].slice(1)
+          )}
           contain={true}
           setValue={(value) =>
             value != listType[0]

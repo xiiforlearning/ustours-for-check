@@ -5,7 +5,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
+    z-index: 1001;
 }
 
 .modal{
@@ -278,4 +278,14 @@
 }
 .policyText span{
     color: #328AEE;
+}
+
+@media (max-width: 672px) {
+    .guideFormModal{
+        width: 100%;
+        height: 100%;
+    }
+    .fullArea{
+        width: 100%;
+    }
 }

@@ -11,27 +11,27 @@ export class TourDayDto {
   @ApiProperty({ maxLength: 50 })
   @IsString()
   @MaxLength(50)
-  title: string;
+  title!: string;
 
   @ApiProperty({ maxLength: 500 })
   @IsString()
   @MaxLength(500)
-  description: string;
+  description!: string;
 
   @ApiProperty({ type: [String], maxItems: 4 })
   @IsArray()
   @IsString({ each: true })
-  photos: string[];
+  photos!: string[];
 }
 
 export class RoutePointDto {
   @ApiProperty()
   @IsNumber()
-  lat: number;
+  lat!: number;
 
   @ApiProperty()
   @IsNumber()
-  lng: number;
+  lng!: number;
 
   @ApiProperty({ required: false })
   @IsOptional()
@@ -47,177 +47,200 @@ export class RoutePointDto {
 export class AvailabilityDto {
   @ApiProperty({ description: 'Дата в формате YYYY-MM-DD' })
   @IsDateString()
-  date: string;
+  date!: string;
 
   @ApiProperty({ description: 'Общее количество мест на эту дату' })
   @IsNumber()
-  total_slots: number;
+  total_slots!: number;
 
   @ApiProperty({ description: 'Количество свободных мест на эту дату' })
   @IsNumber()
-  available_slots: number;
+  available_slots!: number;
 }
 
 export class CreateTourDto {
   @ApiProperty()
   @IsUUID()
-  partner_id: string;
+  partner_id!: string;
 
-  @ApiProperty({ maxLength: 40 })
+  @ApiProperty({ maxLength: 100 })
   @IsString()
-  @MaxLength(40)
-  title: string;
+  @MaxLength(100)
+  title!: string;
 
-  @ApiProperty({ type: [String], minItems: 1, required: false })
+  @ApiProperty({ type: [String], minItems: 1, required: false, nullable: true })
   @IsOptional()
   @IsArray()
   @ArrayMinSize(1)
   @IsString({ each: true })
-  photos?: string[];
+  photos?: string[] | null;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ type: [String], required: false, nullable: true })
   @IsOptional()
-  @IsString()
-  city?: string;
+  @IsArray()
+  @IsString({ each: true })
+  city?: string[] | null;
 
-  @ApiProperty({ enum: TourStatus, description: 'Статус тура. not_complete — черновик, можно сохранить незаполненный тур.' })
+  @ApiProperty({ enum: TourStatus, description: 'Статус тура. not_complete — черновик, можно сохранить незаполненный тур.', required: false, nullable: true })
   @IsEnum(TourStatus)
   @IsOptional()
-  status: TourStatus = TourStatus.NOT_COMPLETE;
+  status?: TourStatus | null;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: false, nullable: true })
   @IsOptional()
   @IsNumber()
   rating?: number | null;
 
-  @ApiProperty({ maxLength: 700, required: false })
+  @ApiProperty({ maxLength: 700, required: false, nullable: true })
   @IsOptional()
   @IsString()
   @MaxLength(700)
-  description?: string;
+  description?: string | null;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: false, nullable: true })
   @IsOptional()
   @IsNumber()
-  duration?: number;
+  duration?: number | null;
 
-  @ApiProperty({ enum: DurationUnit, required: false })
+  @ApiProperty({ enum: DurationUnit, required: false, nullable: true })
   @IsOptional()
   @IsEnum(DurationUnit)
-  duration_unit?: DurationUnit;
+  duration_unit?: DurationUnit | null;
 
-  @ApiProperty({ enum: TourType, required: false })
+  @ApiProperty({ enum: TourType, required: false, nullable: true })
   @IsOptional()
   @IsEnum(TourType)
-  type?: TourType;
+  type?: TourType | null;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: false, nullable: true })
   @IsOptional()
   @IsNumber()
-  min_persons?: number;
+  min_persons?: number | null;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: false, nullable: true })
   @IsOptional()
   @IsNumber()
-  max_persons?: number;
+  max_persons?: number | null;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: false, nullable: true })
   @IsOptional()
   @IsString()
-  departure?: string;
+  departure?: string | null;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: false, nullable: true })
   @IsOptional()
   @IsNumber()
-  price?: number;
+  price?: number | null;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: false, nullable: true })
   @IsOptional()
   @IsString()
-  currency?: string;
+  currency?: string | null;
 
-  @ApiProperty({ type: [String], minItems: 1, required: false })
+  @ApiProperty({ type: [String], minItems: 1, required: false, nullable: true })
   @IsOptional()
   @IsArray()
   @ArrayMinSize(1)
   @IsString({ each: true })
-  languages?: string[];
+  languages?: string[] | null;
 
-  @ApiProperty({ enum: Difficulty, required: false })
+  @ApiProperty({ enum: Difficulty, required: false, nullable: true })
   @IsOptional()
   @IsEnum(Difficulty)
-  difficulty?: Difficulty;
+  difficulty?: Difficulty | null;
 
-  @ApiProperty({ pattern: '^\\d{2}:\\d{2}$', required: false })
+  @ApiProperty({ pattern: '^\\d{2}:\\d{2}$', required: false, nullable: true })
   @IsOptional()
   @IsString()
-  departure_time?: string;
+  departure_time?: string | null;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: false, nullable: true })
   @IsOptional()
   @IsNumber()
   child_price?: number | null;
 
-  @ApiProperty({ required: false })
+  @ApiProperty({ required: false, nullable: true })
   @IsOptional()
   @IsString()
   rejection_reason?: string | null;
 
-  @ApiProperty({ required: false, type: [TourDayDto] })
+  @ApiProperty({ required: false, type: [TourDayDto], nullable: true })
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => TourDayDto)
-  days?: TourDayDto[];
+  days?: TourDayDto[] | null;
 
-  @ApiProperty({ required: false, type: [String] })
+  @ApiProperty({ required: false, type: [String], nullable: true })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  included?: string[];
+  included?: string[] | null;
 
-  @ApiProperty({ required: false, type: [String] })
+  @ApiProperty({ required: false, type: [String], nullable: true })
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  excluded?: string[];
+  excluded?: string[] | null;
 
-  @ApiProperty({ required: false, type: [RoutePointDto] })
+  @ApiProperty({ required: false, type: [RoutePointDto], nullable: true })
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => RoutePointDto)
-  route_points?: RoutePointDto[];
+  route_points?: RoutePointDto[] | null;
 
-  @ApiProperty({ type: [String], minItems: 1, description: 'Available dates in ISO format', required: false })
+  @ApiProperty({ type: [String], minItems: 1, description: 'Available dates in ISO format', required: false, nullable: true })
   @IsOptional()
   @IsArray()
   @ArrayMinSize(1)
   @IsDateString()
-  available_dates?: string[];
+  available_dates?: string[] | null;
 
-  @ApiProperty({ maxLength: 255, description: 'Main photo URL or path', required: false })
+  @ApiProperty({ maxLength: 255, description: 'Main photo URL or path', required: false, nullable: true })
   @IsOptional()
   @IsString()
   @MaxLength(255)
-  main_photo?: string;
+  main_photo?: string | null;
 
-  @ApiProperty({ maxLength: 100, description: 'City from which the tour departs', required: false })
+  @ApiProperty({ maxLength: 100, description: 'City from which the tour departs', required: false, nullable: true })
   @IsOptional()
   @IsString()
   @MaxLength(100)
-  departure_city?: string;
+  departure_city?: string | null;
 
-  @ApiProperty({ type: [AvailabilityDto], description: 'Доступность тура по датам', required: false })
+  @ApiProperty({ type: [AvailabilityDto], description: 'Доступность тура по датам', required: false, nullable: true })
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => AvailabilityDto)
-  availability?: AvailabilityDto[];
+  availability?: AvailabilityDto[] | null;
 
-  @ApiProperty()
-  created_at: Date;
+  @ApiProperty({ required: false, nullable: true })
+  @IsOptional()
+  created_at?: Date | null;
 
-  @ApiProperty()
-  updated_at: Date;
+  @ApiProperty({ required: false, nullable: true })
+  @IsOptional()
+  updated_at?: Date | null;
+
+  @ApiProperty({ required: false, nullable: true, description: 'Широта отправления' })
+  @IsOptional()
+  @IsNumber()
+  departure_lat?: number | null;
+
+  @ApiProperty({ required: false, nullable: true, description: 'Долгота отправления' })
+  @IsOptional()
+  @IsNumber()
+  departure_lng?: number | null;
+
+  @ApiProperty({ required: false, nullable: true, description: 'Адрес отправления' })
+  @IsOptional()
+  @IsString()
+  departure_address?: string | null;
+
+  @ApiProperty({ required: false, nullable: true, description: 'Ориентир отправления' })
+  @IsOptional()
+  @IsString()
+  departure_landmark?: string | null;
 } 

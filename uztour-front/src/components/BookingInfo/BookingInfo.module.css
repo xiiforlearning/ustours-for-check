@@ -3,7 +3,8 @@
     padding: 15px;
     background-color: #fff;
     height: fit-content;
-    width: 562px;
+    max-width:  562px;
+    width: 100%;
 }
 .listOrdinary{
     display: flex;
@@ -76,3 +77,4 @@
     color: #0FA53A;
     font-size: 14px;
 }
+

@@ -2,10 +2,13 @@
 import { useEffect, useRef, useState } from "react";
 import classes from "./MainSearch.module.css";
 import { cities } from "@/consts";
-function Select() {
+import { Dict } from "@/types";
+import useScreenWidth from "@/hooks/useWindowsize";
+function Select({ dict }: { dict: Dict }) {
   const [value, setValue] = useState("");
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const screensize = useScreenWidth();
 
   const handleToggle = () => setOpen(true);
 
@@ -44,7 +47,10 @@ function Select() {
                   className={classes.city}
                   key={city}
                 >
-                  {city}
+                  {
+                    //@ts-expect-error aaa
+                    dict[city]
+                  }
                 </p>
               ))}
             </div>
@@ -66,10 +72,15 @@ function Select() {
           style={{ color: value ? "#000" : "#848484" }}
           className={classes.searchText}
         >
-          {value || "Выберите город"}
+          {
+            //@ts-expect-error aaa
+            dict[value] ||
+              (screensize < 768 ? dict["city"] : dict["selectCity"])
+          }
         </p>
         <svg
           width="17"
+          className={classes.arrow}
           height="16"
           viewBox="0 0 17 16"
           fill="none"

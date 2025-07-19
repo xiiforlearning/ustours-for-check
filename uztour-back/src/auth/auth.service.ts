@@ -19,13 +19,13 @@ export class AuthService {
     private otpService: OtpService,
   ) {}
 
-  async requestCode(dto: RequestCodeDto) {
+  async requestCode(dto: RequestCodeDto, langHeader?: string) {
     if (dto.type === 'customer') {
       const user = await this.usersService.findByEmail(dto.email);
       if (!user) {
         await this.usersService.createCustomer({ email: dto.email });
       }
-      await this.otpService.generateOTP(dto.email);
+      await this.otpService.generateOTP(dto.email, langHeader);
       return { message: 'Code sent to email' };
     }
     if (dto.type === 'partner') {
@@ -33,7 +33,7 @@ export class AuthService {
       if (!user) {
         await this.usersService.createCustomer({ email: dto.email });
       }
-      await this.otpService.generateOTP(dto.email);
+      await this.otpService.generateOTP(dto.email, langHeader);
       return { message: 'Code sent to email' };
     }
     throw new BadRequestException('Unknown user type');
@@ -49,11 +49,11 @@ export class AuthService {
       await this.usersService.markEmailAsVerified(user.email);
     }
     if (dto.type === 'customer') {
-      return this.issueJwt(user);
+      return this.issueJwt(user, 'customer');
     }
     if (dto.type === 'partner') {
       if (user.partner && user.partner.phone && user.partner.isPhoneVerified) {
-        return this.issueJwt(user);
+        return this.issueJwt(user, 'partner');
       } else {
         return {
           status: 'need_profile_completion'
@@ -78,15 +78,15 @@ export class AuthService {
     );
     const user = await this.usersService.findByEmail(dto.email);
     if (!user) throw new UnauthorizedException('User not found');
-    return this.issueJwt(user);
+    return this.issueJwt(user, 'partner');
   }
 
-  private issueJwt(user: any) {
+  private issueJwt(user: any, type: 'customer' | 'partner') {
     const payload = {
       email: user.email,
       sub: user.id,
       isEmailVerified: user.isEmailVerified,
-      type: user.partner ? 'partner' : 'customer',
+      type,
     };
     return {
       access_token: this.jwtService.sign(payload),
@@ -94,7 +94,7 @@ export class AuthService {
         id: user.id,
         email: user.email,
         isEmailVerified: user.isEmailVerified,
-        type: user.partner ? 'partner' : 'customer',
+        type,
       },
     };
   }

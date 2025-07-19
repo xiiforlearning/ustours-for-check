@@ -4,25 +4,24 @@ import {
   Column,
   CreateDateColumn,
 } from 'typeorm';
-import { v4 as uuidv4 } from 'uuid';
 
 @Entity()
 export class OTP {
   @PrimaryGeneratedColumn('uuid')
-  id: string = uuidv4();
+  id!: string;
 
   @Column()
-  email: string;
+  email!: string;
 
   @Column()
-  code: string; // Зашифрованный OTP
+  code!: string;
 
   @Column({ default: false })
-  isUsed: boolean;
+  isUsed!: boolean;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
-  @Column({ type: 'timestamp' })
-  expiresAt: Date;
+  @Column()
+  expiresAt!: Date;
 }

@@ -1,0 +1,109 @@
+.title{
+    font-size: 20px;
+    color: #242D3F;
+}
+
+.desc{
+    font-size: 14px;
+    color: #848484;
+    margin-top: 15px;
+}
+.btn{
+    height: 50px;
+    background-color: #328AEE;
+    display: flex;
+    gap: 5px;
+    width: 188px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-bottom: 20px;
+}
+
+.btnText{
+    color: #fff;
+    font-size: 16px;
+}
+
+.layer{
+    width: 100%;
+    height: 100%;
+    background-color: #00000087;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+}
+
+.modal{
+    background-color: #fff;
+    padding: 15px;
+    border-radius: 8px;
+}
+
+.footer{
+    display: flex;
+    gap: 10px; 
+    align-items: flex-end;
+}
+.day{
+    width: 100%;
+    padding: 15px;
+    border: 1px solid #DDDDDD;
+    display: flex;
+    justify-content: space-between;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.places{
+    margin-top: 10px;
+    background-color: #E6FFE1;
+    padding: 8px;
+    border-radius: 10px;
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+    align-items: center;
+}
+.placesText{
+    font-size: 14px;
+    color: #0FA53A;
+}
+.dayBtnList{
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.delete{
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+.delete p{
+    color: #EB5757;
+    font-size: 14px;
+}
+
+.editBtn{
+    padding: 8px 15px;
+    background-color: #E1EFFF;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.editBtn p{
+    color: #328AEE;
+    font-size: 16px;
+}

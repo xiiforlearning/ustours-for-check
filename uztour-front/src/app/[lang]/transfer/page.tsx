@@ -2,13 +2,23 @@ import Link from "next/link";
 import classes from "./transfer.module.css";
 import FilterTransfer from "@/components/FilterTransfer";
 import TransportList from "@/components/TransportList";
-function Transfer() {
+import { i18n, Locale } from "@/i18n-config";
+import { getDictionary } from "@/get-dictionary";
+import { Suspense } from "react";
+
+export async function generateStaticParams() {
+  return i18n.locales.map((locale) => ({ lang: locale }));
+}
+
+async function Page(props: { params: Promise<{ lang: Locale }> }) {
+  const params = await props.params;
+  const dict = await getDictionary(params.lang);
   return (
     <div className={classes.wrapper}>
       <div className={classes.container}>
         <div className={classes.header}>
-          <Link href="/" className={classes.headerText}>
-            Главная
+          <Link href={"/" + params.lang + "/"} className={classes.headerText}>
+            {dict["main"]}
           </Link>
           <svg
             width="16"
@@ -22,17 +32,17 @@ function Transfer() {
               fill="#242D3F"
             />
           </svg>
-          <p className={classes.headerTitle}>Каталог трансфера</p>
+          <p className={classes.headerTitle}>{dict["transfer.catalog"]}</p>
         </div>
-        <h2 className={classes.title}>Выберите транспорт для трансфера</h2>
-        <p className={classes.desc}>
-          Встречаем, помогаем с багажом и доставляем точно в срок!
-        </p>
-        <FilterTransfer />
-        <TransportList />
+        <h2 className={classes.title}>{dict["transfer.choose_transport"]}</h2>
+        <p className={classes.desc}>{dict["transfer.description"]}</p>
+        <Suspense>
+          <FilterTransfer dict={dict} />
+          <TransportList lang={params.lang} dict={dict} />
+        </Suspense>
       </div>
     </div>
   );
 }
 
-export default Transfer;
+export default Page;

@@ -1,0 +1,27 @@
+.container{
+    width: 100%;
+    padding: 0 20px;
+    flex: 1;
+}
+
+.wrapper{
+    width: 100%;
+    max-width: 1144px;
+    margin: 30px auto 20px; 
+    display: flex;
+    gap: 20px;
+}
+
+.menuWrapper{
+    width: 340px;
+}
+
+.contentWrapper{
+    flex: 1;
+}
+
+@media (max-width:1024px) {
+    .menuWrapper{
+        display: none;
+    }
+}

@@ -4,5 +4,5 @@ import { ApiProperty } from '@nestjs/swagger';
 export class CreateCustomerDto {
   @ApiProperty()
   @IsEmail()
-  email: string;
+  email!: string;
 }

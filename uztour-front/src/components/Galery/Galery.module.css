@@ -10,6 +10,7 @@
 .mainImage{
     width: calc(50% - 2px);
     height: 100%;
+    object-fit: cover;
 }
 .grid{
     flex-wrap: wrap;
@@ -20,4 +21,18 @@
 }
 .photo{
     width: calc(50% - 2px);
+    object-fit: cover;
+}
+.grid2{
+    flex-direction: column;
+    flex: 1;
+}
+.grid2 .photo{
+    width: 100%;
+    height: calc(50% - 2px);
+    object-fit: cover;
+}
+.mainImage2{
+    width: calc(60% - 2px);
+    height: 100%;
 }

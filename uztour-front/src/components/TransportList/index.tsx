@@ -1,45 +1,65 @@
 "use client";
+import { Dict } from "@/types";
 import PrimaryBtn from "../ui/PrimaryBtn";
 import classes from "./TransportList.module.css";
-function TransportList() {
+import { Locale } from "@/i18n-config";
+import { useState } from "react";
+// import { useSearchParams } from "next/navigation";
+function TransportList({ lang, dict }: { lang: Locale; dict: Dict }) {
+  // const searchParams = useSearchParams();
+  lang;
+  const [mainData, setMainData] = useState<
+    {
+      image: string;
+      name: string;
+      people: number;
+      baggage: number;
+      freeWaitTime: Dict;
+      price: number;
+    }[]
+  >([]);
   const data = [
     {
       image: "/images/car1.png",
       name: "Chevrolet Lacetti",
-      status: "Эконом-класс",
-      people: 3,
+      people: 2,
       baggage: 2,
-      freeWaitTime: "2 часа",
+      freeWaitTime: {
+        ru: "1 часа бесплатно",
+        cn: "1 小时免费等待",
+        en: "1 hours free wait",
+        uz: "1 soat bepul kutish",
+      },
       price: 12,
     },
     {
       image: "/images/car2.png",
       name: "Chevrolet Cobalt",
-      status: "Комфорт-класс",
-      people: 3,
+      people: 2,
       baggage: 2,
-      freeWaitTime: "2 часа",
+      freeWaitTime: {
+        ru: "2 часа бесплатно",
+        cn: "2小时免费等待",
+        en: "2 hours free wait",
+        uz: "2 soat bepul kutish",
+      },
       price: 14,
     },
     {
       image: "/images/car3.png",
       name: "Chevrolet Malibu",
-      status: "Бизнесс-класс",
-      people: 3,
+      people: 2,
       baggage: 2,
-      freeWaitTime: "2 часа",
+      freeWaitTime: {
+        ru: "1 часа бесплатно",
+        cn: "1 小时免费等待",
+        en: "1 hours free wait",
+        uz: "1 soat bepul kutish",
+      },
       price: 16,
     },
-    {
-      image: "/images/car4.png",
-      name: "Toyota Corolla",
-      status: "Бизнесс-класс",
-      people: 3,
-      baggage: 2,
-      freeWaitTime: "2 часа",
-      price: 18,
-    },
   ];
+
   return (
     <div className={classes.container}>
       {data.map((item) => (
@@ -48,9 +68,7 @@ function TransportList() {
           <div className={classes.info}>
             <div className={classes.topInfo}>
               <p className={classes.name}>{item.name}</p>
-              <div className={classes.infoItem}>
-                <p className={classes.infoItemText}>{item.status}</p>
-              </div>
+
               <div className={classes.infoItem}>
                 <svg
                   width="16"
@@ -113,7 +131,7 @@ function TransportList() {
                 </svg>
 
                 <p className={classes.featureText}>
-                  Бесплатное ожидание: 2 часа
+                  {dict.freeWait}: 2 {dict["hours"]}
                 </p>
               </div>
               <div className={classes.feature}>
@@ -130,7 +148,9 @@ function TransportList() {
                   />
                 </svg>
 
-                <p className={classes.featureText}>Встреча и приветсвие</p>
+                <p className={classes.featureText}>
+                  {dict["meetingAndGreeting"]}
+                </p>
               </div>
               <div className={classes.feature}>
                 <svg
@@ -157,7 +177,7 @@ function TransportList() {
                   />
                 </svg>
 
-                <p className={classes.featureText}>Проверено на безопасность</p>
+                <p className={classes.featureText}>{dict["securityChecked"]}</p>
               </div>
               <div className={classes.feature}>
                 <svg
@@ -184,11 +204,13 @@ function TransportList() {
                   />
                 </svg>
 
-                <p className={classes.featureText}>Мгновенное подтверждение</p>
+                <p className={classes.featureText}>
+                  {dict["instantConfirmation"]}
+                </p>
               </div>
             </div>
             <div className={classes.moreInfo}>
-              <p className={classes.moreInfoText}>Подробнее</p>
+              <p className={classes.moreInfoText}>{dict["more"]}</p>
               <svg
                 width="21"
                 height="20"
@@ -205,7 +227,7 @@ function TransportList() {
           </div>
           <div className={classes.priceContent}>
             <p className={classes.price}>{item.price} USD</p>
-            <PrimaryBtn text="Забронировать" onClick={() => {}} />
+            <PrimaryBtn text={dict["book"]} onClick={() => {}} />
           </div>
         </div>
       ))}

@@ -1,14 +1,36 @@
 import Link from "next/link";
 import classes from "./GuideCard.module.css";
-function GuideCard() {
+import { Dict, ResponseTour } from "@/types";
+import { Locale } from "@/i18n-config";
+function GuideCard({
+  dict,
+  currentExcursion,
+  lang,
+}: {
+  dict: Dict;
+  currentExcursion: ResponseTour;
+  lang: Locale;
+}) {
+  console.log(currentExcursion);
   return (
     <div className={classes.conatiner}>
       <div className={classes.top}>
         <div className={classes.guidePhotoBlock}>
-          <img className={classes.guidePhoto} src="/images/guide.png" />
+          <img
+            className={classes.guidePhoto}
+            src={currentExcursion?.partner?.avatar || "/images/guide.png"}
+          />
           <div className={classes.guideNameBlock}>
-            <h2 className={classes.guideName}>Гид: Ислом</h2>
-            <div className={classes.ratingContent}>
+            <h2 className={classes.guideName}>
+              {currentExcursion?.partner?.partnerType === "company"
+                ? dict["company"]
+                : dict["guide"]}
+              :{" "}
+              {currentExcursion?.partner?.partnerType === "company"
+                ? dict["company"]
+                : currentExcursion?.partner?.firstName || "Ислом"}
+            </h2>
+            {/* <div className={classes.ratingContent}>
               <div className={classes.ratingValue}>
                 <svg
                   width="17"
@@ -25,8 +47,10 @@ function GuideCard() {
                 <p className={classes.rating}>{4.5}</p>
               </div>
               <div className={classes.dott}></div>
-              <p className={classes.rating}>{15} оценки</p>
-            </div>
+              <p className={classes.rating}>
+                {15} {dict["marks"]}
+              </p>
+            </div> */}
           </div>
         </div>
         <div className={classes.features}>
@@ -42,7 +66,21 @@ function GuideCard() {
               fill="black"
             />
           </svg>
-          <p className={classes.featuresText}>Английский, русский, китайский</p>
+          {currentExcursion?.partner ? (
+            <p className={classes.featuresText}>
+              {currentExcursion.partner.spokenLanguages
+                .map((lang, index) =>
+                  //@ts-expect-error aaa
+                  index == 0 ? dict[lang] : dict[lang].toLocaleLowerCase()
+                )
+                .join(", ")}
+            </p>
+          ) : (
+            <p className={classes.featuresText}>
+              {dict["english"]}, {dict["russian"].toLocaleLowerCase()},{" "}
+              {dict["chinese"].toLocaleLowerCase()}
+            </p>
+          )}
         </div>
         <div className={classes.features}>
           <svg
@@ -58,27 +96,20 @@ function GuideCard() {
             />
           </svg>
 
-          <p className={classes.featuresText}>Более 5 лет проводит экскурсии</p>
-        </div>
-        <div className={classes.features}>
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 16 16"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M2.66634 3C1.92634 3 1.33301 3.59333 1.33301 4.33333V11C1.33301 11.3536 1.47348 11.6928 1.72353 11.9428C1.97358 12.1929 2.31272 12.3333 2.66634 12.3333H7.99967V15.6667L9.99967 13.6667L11.9997 15.6667V12.3333H13.333C13.6866 12.3333 14.0258 12.1929 14.2758 11.9428C14.5259 11.6928 14.6663 11.3536 14.6663 11V6.33333V5V4.33333C14.6663 3.97971 14.5259 3.64057 14.2758 3.39052C14.0258 3.14048 13.6866 3 13.333 3H10.6663H2.66634ZM7.99967 4.33333L9.99967 5.66667L11.9997 4.33333V6.66667L13.9997 7.66667L11.9997 8.66667V11L9.99967 9.66667L7.99967 11V8.66667L5.99967 7.66667L7.99967 6.66667V4.33333ZM2.66634 4.33333H5.99967V5.66667H2.66634V4.33333ZM2.66634 7H4.66634V8.33333H2.66634V7ZM2.66634 9.66667H5.99967V11H2.66634V9.66667Z"
-              fill="black"
-            />
-          </svg>
-
           <p className={classes.featuresText}>
-            Сертифицированный гид с лицензией
+            {dict["workExperience"]}:{" "}
+            {currentExcursion.partner.yearsOfExperience | 2}{" "}
+            {lang == "ru" && currentExcursion.partner.yearsOfExperience == 1
+              ? "год"
+              : dict["year"]}
           </p>
         </div>
-        <Link href={"#"} className={classes.features}>
+
+        <Link
+          href={currentExcursion?.partner?.certificates[0] || "#"}
+          target="_blank"
+          className={classes.features}
+        >
           <svg
             width="22"
             height="22"
@@ -93,19 +124,17 @@ function GuideCard() {
           </svg>
 
           <p className={`${classes.featuresText} ${classes.link}`}>
-            Сертифицированный гид с лицензией
+            {dict["certifacatedGuide"]}
           </p>
         </Link>
       </div>
       <div className={classes.bottom}>
         <p className={classes.description}>
-          Здравствуйте! Меня зовут Ислом, я коренной житель Самарканда и
-          профессиональный гид. Работаю в сфере туризма с 2010 года. С большим
-          удовольствием расскажу вам историю любимого города.
+          {currentExcursion?.partner?.about || dict["guideDesc"]}
         </p>
-        <Link href={"#"} className={classes.secondatyBtn}>
+        {/* <Link href={"#"} className={classes.secondatyBtn}>
           <p className={classes.secondatyBtnText}>Перейти в профиль гида</p>
-        </Link>
+        </Link> */}
       </div>
     </div>
   );

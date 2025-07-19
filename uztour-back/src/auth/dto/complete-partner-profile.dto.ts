@@ -4,23 +4,23 @@ import { ApiProperty } from '@nestjs/swagger';
 export class CompletePartnerProfileDto {
   @ApiProperty()
   @IsEmail()
-  email: string;
+  email!: string;
 
   @ApiProperty()
   @IsPhoneNumber()
-  phone: string;
+  phone!: string;
 
   @ApiProperty()
   @IsNotEmpty()
-  firstName: string;
+  firstName!: string;
 
   @ApiProperty()
   @IsNotEmpty()
-  lastName: string;
+  lastName!: string;
 
   @ApiProperty({ enum: ['individual', 'company'] })
   @IsEnum(['individual', 'company'])
-  partnerType: 'individual' | 'company';
+  partnerType!: 'individual' | 'company';
 
   @ApiProperty({ required: false })
   @ValidateIf(o => o.partnerType === 'company')

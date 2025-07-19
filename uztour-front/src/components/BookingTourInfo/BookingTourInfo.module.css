@@ -119,3 +119,9 @@
     align-items: center;
     justify-content: center;
 }
+
+@media (max-width:540px) {
+    .container{
+        width: 100%;
+    }
+}

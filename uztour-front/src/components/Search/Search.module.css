@@ -36,3 +36,11 @@
     border: 1px solid #0099FF;
     background-color: #fff;
 }
+
+
+@media (max-width: 600px) {
+    .search{
+        display: none;
+    }
+    
+}

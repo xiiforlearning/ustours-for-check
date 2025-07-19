@@ -40,3 +40,19 @@
     align-items: flex-end;
     margin-top: 8px;
 }
+
+.menuWrapper{
+    position: absolute;
+}
+.carContainer{
+    position: relative;
+}
+
+@media (max-width:760px) {
+ .filter{
+    flex-direction: column;
+ }   
+ .carContainer{
+    width: 100%;
+ }
+}

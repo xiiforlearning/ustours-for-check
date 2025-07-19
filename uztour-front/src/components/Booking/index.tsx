@@ -1,34 +1,50 @@
 "use client";
 import { useState } from "react";
-import Select from "../ui/Select";
 import classes from "./Booking.module.css";
 import Counter from "../Counter";
 import PrimaryBtn from "../ui/PrimaryBtn";
-import { ExcursionType } from "@/types";
+import { Dict, ResponseTour } from "@/types";
 import useStore from "@/store/useStore";
 import { useRouter } from "next/navigation";
-function Booking({ currentExcursion }: { currentExcursion: ExcursionType }) {
+import { Locale } from "@/i18n-config";
+import Select, { ActionMeta, OnChangeValue } from "react-select";
+
+function Booking({
+  currentExcursion,
+  dict,
+  lang,
+}: {
+  currentExcursion: ResponseTour;
+  dict: Dict;
+  lang: Locale;
+}) {
   const router = useRouter();
   const user = useStore((state) => state.user);
-  const [date, setDate] = useState("26-29 июля");
+  const [date, setDate] = useState<string>();
   const [adult, setAdult] = useState(1);
   const [child, setChild] = useState(0);
 
   const handleClick = () => {
+    if (!date) return;
     if (user) {
       router.push(
-        "/booking?excursion_id=" +
+        "/" +
+          lang +
+          "/booking?excursion_id=" +
           currentExcursion.id +
           "&date=" +
           date +
           "&adult=" +
           adult +
           "&child=" +
-          child
+          child +
+          "&confirm-modal=true"
       );
     } else {
       router.push(
-        "?login=true&excursion_id=" +
+        "/" +
+          lang +
+          "/booking?login=true&excursion_id=" +
           currentExcursion.id +
           "&date=" +
           date +
@@ -40,14 +56,32 @@ function Booking({ currentExcursion }: { currentExcursion: ExcursionType }) {
     }
   };
 
+  const options = currentExcursion.availability.map((item) => ({
+    label: item.date.split(" - ")[0],
+    value: item.date,
+  }));
+
+  const onChange = (
+    newValue: OnChangeValue<{ value: string; label: string }, false>,
+    actionMeta: ActionMeta<{ value: string; label: string }>
+  ) => {
+    actionMeta;
+    if (newValue?.value) {
+      setDate(newValue?.value);
+      return;
+    }
+  };
+
   return (
     <div className={classes.container}>
       <div className={classes.top}>
         <Select
-          value={date}
-          setValue={setDate}
-          label="Выберите даты"
-          options={["30-31 июля", "3-6 августа", "7-10 августа"]}
+          value={
+            date ? { value: date.split(" - ")[0], label: date } : undefined
+          }
+          onChange={onChange}
+          placeholder={dict["selectDate"]}
+          options={options}
         />
         <div style={{ height: 12 }} />
         <Counter
@@ -55,8 +89,8 @@ function Booking({ currentExcursion }: { currentExcursion: ExcursionType }) {
           setValue={(value: number) => {
             value < 1 ? setAdult(1) : setAdult(value);
           }}
-          placeholder="Взрослый"
-          label="Количество"
+          placeholder={dict["adult"]}
+          label={dict["quantity"]}
         />
         <div style={{ height: 12 }} />
         <Counter
@@ -64,15 +98,26 @@ function Booking({ currentExcursion }: { currentExcursion: ExcursionType }) {
           setValue={(value: number) => {
             value < 0 ? setChild(0) : setChild(value);
           }}
-          placeholder="Ребенок (до 139см)"
+          placeholder={
+            dict["child"] + "(" + dict["from"] + "139" + dict["cm"] + ")"
+          }
         />
       </div>
       <div className={classes.bottom}>
         <p className={classes.price}>
-          Итого: <span>{currentExcursion.price * (adult + child)} USD</span>
+          {dict["so"]}:{" "}
+          <span>
+            {Number(currentExcursion.price) * adult +
+              child * Number(currentExcursion.child_price)}{" "}
+            USD
+          </span>
         </p>
         <div style={{ height: 12 }} />
-        <PrimaryBtn onClick={handleClick} text="Забронировать" />
+        <PrimaryBtn
+          disabled={!date}
+          onClick={handleClick}
+          text={dict["book"]}
+        />
       </div>
     </div>
   );

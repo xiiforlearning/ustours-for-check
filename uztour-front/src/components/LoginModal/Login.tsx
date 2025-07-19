@@ -1,3 +1,4 @@
+import { Dict } from "@/types";
 import PrimaryBtn from "../ui/PrimaryBtn";
 import classes from "./LoginModal.module.css";
 import Image from "next/image";
@@ -9,6 +10,7 @@ function Login({
   submit,
   error,
   loading,
+  dict,
 }: {
   email: string;
   setIsGuide: (isGuide: number) => void;
@@ -17,6 +19,7 @@ function Login({
   submit: () => void;
   error: string;
   loading?: boolean;
+  dict: Dict;
 }) {
   return (
     <>
@@ -32,14 +35,14 @@ function Login({
           style={{ color: isGuide === 0 ? "#328AEE" : "#BBBBBB" }}
           className={classes.tabText}
         >
-          Я турист
+          {dict["iam_tourist"]}
         </div>
         <div
           style={{ color: isGuide === 1 ? "#328AEE" : "#BBBBBB" }}
           onClick={() => setIsGuide(1)}
           className={classes.tabText}
         >
-          Я автор тура
+          {dict["iam_guide"]}
         </div>
       </div>
       <div
@@ -89,11 +92,11 @@ function Login({
           <p className={classes.errorText}>{error}</p>
         </div>
       )}
-      <PrimaryBtn loading={loading} text="Продолжить" onClick={submit} />
+      <PrimaryBtn loading={loading} text={dict["continue"]} onClick={submit} />
 
       <div className={classes.socials}>
         <div className={classes.line1}></div>
-        <p className={classes.loginBySocial}>Или продолжить с помощью</p>
+        <p className={classes.loginBySocial}>{dict["login_by_social"]}</p>
         <div className={classes.line1}></div>
       </div>
       <div className={classes.socialsContainer}>
@@ -112,9 +115,9 @@ function Login({
 
       <div className={classes.agreement}>
         <p className={classes.agreementText}>
-          Нажимая “Продолжить”, вы соглашаетесь с условиями <br />
+          {dict["agreeByContinue"].split("$")[0]} <br />
           <span className={classes.link}>
-            публичной оферты и обработкой персональных данных
+            {dict["agreeByContinue"].split("$")[1]}
           </span>
         </p>
       </div>

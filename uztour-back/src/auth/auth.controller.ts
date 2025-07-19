@@ -1,4 +1,4 @@
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, Headers } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { RequestCodeDto } from './dto/request-code.dto';
@@ -28,8 +28,8 @@ export class AuthController {
     }
   })
   @Post('request-code')
-  async requestCode(@Body() dto: RequestCodeDto) {
-    return this.authService.requestCode(dto);
+  async requestCode(@Body() dto: RequestCodeDto, @Headers('accept-language') langHeader?: string) {
+    return this.authService.requestCode(dto, langHeader);
   }
 
   @ApiOperation({ summary: 'Verify code for registration/login' })

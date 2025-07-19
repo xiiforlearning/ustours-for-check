@@ -1,63 +1,114 @@
-import { Injectable, ForbiddenException, BadRequestException } from '@nestjs/common';
+import { Injectable, ForbiddenException, BadRequestException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { Tour } from './entities/tour.entity';
 import { CreateTourDto } from './dto/create-tour.dto';
 import { TourFiltersDto, SortField, SortOrder } from './dto/tour-filters.dto';
+import { UsersService } from '../users/users.service';
+import { CurrencyService } from '../currency/currency.service';
 
 @Injectable()
 export class ToursService {
   constructor(
     @InjectRepository(Tour)
     private readonly tourRepository: Repository<Tour>,
+    private readonly usersService: UsersService,
+    private readonly currencyService: CurrencyService,
   ) {}
 
-  async create(createTourDto: CreateTourDto): Promise<Tour> {
-    const { partner_id, ...rest } = createTourDto;
-    if (!partner_id) {
-      throw new BadRequestException('partner_id is required');
+  async create(createTourDto: Omit<CreateTourDto, 'partner_id'>, userId: string): Promise<Tour> {
+    // Find partner by user ID from JWT
+    const partner = await this.usersService.findPartnerByUserId(userId);
+    if (!partner) {
+      throw new NotFoundException('Partner not found for this user');
     }
-    
-    // Устанавливаем значения по умолчанию для массивов
+
     const tourData = {
-      ...rest,
-      partner_id,
-      photos: rest.photos || [],
-      languages: rest.languages || [],
-      days: rest.days || [],
-      included: rest.included || [],
-      excluded: rest.excluded || [],
-      available_dates: rest.available_dates || [],
-      availability: rest.availability || [],
+      ...createTourDto,
+      partner_id: partner.id, // Use partner ID from database, not from DTO
+      photos: createTourDto.photos ?? [],
+      languages: createTourDto.languages ?? [],
+      days: createTourDto.days ?? [],
+      included: createTourDto.included ?? [],
+      excluded: createTourDto.excluded ?? [],
+      available_dates: createTourDto.available_dates ?? [],
+      availability: createTourDto.availability ?? [],
+      city: createTourDto.city ?? [],
+      status: createTourDto.status ?? undefined,
+      rating: createTourDto.rating ?? undefined,
+      description: createTourDto.description ?? undefined,
+      duration: createTourDto.duration ?? undefined,
+      duration_unit: createTourDto.duration_unit ?? undefined,
+      type: createTourDto.type ?? undefined,
+      min_persons: createTourDto.min_persons ?? undefined,
+      max_persons: createTourDto.max_persons ?? undefined,
+      departure: createTourDto.departure ?? undefined,
+      price: createTourDto.price ?? undefined,
+      currency: createTourDto.currency || 'USD', // <-- default USD
+      difficulty: createTourDto.difficulty ?? undefined,
+      departure_time: createTourDto.departure_time ?? undefined,
+      child_price: createTourDto.child_price ?? undefined,
+      rejection_reason: createTourDto.rejection_reason ?? undefined,
+      route_points: createTourDto.route_points ?? undefined,
+      main_photo: createTourDto.main_photo ?? undefined,
+      departure_city: createTourDto.departure_city ?? undefined,
+      departure_lat: createTourDto.departure_lat ?? undefined,
+      departure_lng: createTourDto.departure_lng ?? undefined,
+      departure_address: createTourDto.departure_address ?? undefined,
+      departure_landmark: createTourDto.departure_landmark ?? undefined,
+      created_at: createTourDto.created_at ?? undefined,
+      updated_at: createTourDto.updated_at ?? undefined,
     };
     
     const tour = this.tourRepository.create(tourData);
     return this.tourRepository.save(tour);
   }
 
-  async findAll(filters?: TourFiltersDto, partner_id?: string): Promise<{ tours: Tour[]; total: number; page: number; limit: number; totalPages: number }> {
+  async findAll(
+    filters?: TourFiltersDto,
+    partner_id?: string,
+    currency?: string
+  ): Promise<{ tours: any[]; total: number; page: number; limit: number; totalPages: number }> {
     const queryBuilder = this.tourRepository
       .createQueryBuilder('tour')
       .leftJoinAndSelect('tour.partner', 'partner');
 
-    // Фильтр по partner_id (если передан)
     if (partner_id) {
       queryBuilder.andWhere('tour.partner_id = :partner_id', { partner_id });
     } else {
-      // Для публичного API показываем только активные туры
       queryBuilder.andWhere('tour.status = :status', { status: 'active' });
     }
 
-    // Применяем фильтры
+    // Фильтрация по цене с учётом валюты
+    let minPriceUZS: number | undefined;
+    let maxPriceUZS: number | undefined;
+    if (filters?.minPrice !== undefined || filters?.maxPrice !== undefined) {
+      const targetCurrency = (filters as any).price || 'UZS';
+      const toRate = await this.currencyService.getCurrencyRate(targetCurrency).then(r => r.rate);
+      if (toRate) {
+        if (filters.minPrice !== undefined) {
+          minPriceUZS = filters.minPrice * toRate;
+        }
+        if (filters.maxPrice !== undefined) {
+          maxPriceUZS = filters.maxPrice * toRate;
+        }
+      }
+    }
+
     this.applyFilters(queryBuilder, filters);
 
-    // Применяем сортировку
+    // Применяем фильтрацию по цене в UZS
+    if (minPriceUZS !== undefined) {
+      queryBuilder.andWhere('(tour.price * cr_from.Rate) >= :minPriceUZS', { minPriceUZS });
+    }
+    if (maxPriceUZS !== undefined) {
+      queryBuilder.andWhere('(tour.price * cr_from.Rate) <= :maxPriceUZS', { maxPriceUZS });
+    }
+
     this.applySorting(queryBuilder, filters);
 
-    // Получаем общее количество записей
     const total = await queryBuilder.getCount();
 
-    // Применяем пагинацию
     const page = filters?.page || 1;
     const limit = filters?.limit || 10;
     const offset = (page - 1) * limit;
@@ -66,8 +117,24 @@ export class ToursService {
 
     const tours = await queryBuilder.getMany();
 
+    // --- Пересчёт цен в нужную валюту ---
+    let resultTours: any[] = tours;
+    if (currency) {
+      const toRate = await this.currencyService.getCurrencyRate(currency).then(r => r.rate);
+      if (!toRate) throw new BadRequestException('Currency rate not found');
+      resultTours = await Promise.all(tours.map(async tour => {
+        if (!tour.price) return { ...tour, price: null, currency };
+        const fromCurrency = tour.currency || 'USD';
+        const fromRate = await this.currencyService.getCurrencyRate(fromCurrency).then(r => r.rate);
+        if (!fromRate) return { ...tour, price: null, currency };
+        const priceInUZS = tour.price * fromRate;
+        const priceInTarget = priceInUZS / toRate;
+        return { ...tour, price: priceInTarget, currency: currency };
+      }));
+    }
+
     return {
-      tours,
+      tours: resultTours,
       total,
       page,
       limit,
@@ -78,14 +145,13 @@ export class ToursService {
   private applyFilters(queryBuilder: SelectQueryBuilder<Tour>, filters?: TourFiltersDto): void {
     if (!filters) return;
 
-    // Фильтр по городу
-    if (filters.city) {
-      queryBuilder.andWhere('LOWER(tour.city) LIKE LOWER(:city)', { 
-        city: `%${filters.city}%` 
-      });
+    if (filters.city && filters.city.length > 0) {
+      queryBuilder.andWhere(
+        `EXISTS (SELECT 1 FROM unnest(tour.city) AS c WHERE c = ANY(:cities))`,
+        { cities: filters.city }
+      );
     }
 
-    // Фильтр по дате
     if (filters.date) {
       queryBuilder.andWhere(
         'EXISTS (SELECT 1 FROM jsonb_array_elements(tour.availability) AS availability_item WHERE availability_item->>\'date\' = :date)',
@@ -93,12 +159,10 @@ export class ToursService {
       );
     }
 
-    // Фильтр по типу экскурсии
     if (filters.type) {
       queryBuilder.andWhere('tour.type = :type', { type: filters.type });
     }
 
-    // Фильтр по языкам
     if (filters.languages && filters.languages.length > 0) {
       const languageConditions = filters.languages.map((_, index) => 
         `EXISTS (SELECT 1 FROM unnest(tour.languages) AS lang WHERE lang = :lang${index})`
@@ -112,7 +176,6 @@ export class ToursService {
       queryBuilder.andWhere(`(${languageConditions})`, languageParams);
     }
 
-    // Фильтр по цене
     if (filters.minPrice !== undefined) {
       queryBuilder.andWhere('tour.price >= :minPrice', { minPrice: filters.minPrice });
     }
@@ -120,7 +183,6 @@ export class ToursService {
       queryBuilder.andWhere('tour.price <= :maxPrice', { maxPrice: filters.maxPrice });
     }
 
-    // Фильтр по длительности
     if (filters.minDuration !== undefined) {
       queryBuilder.andWhere('tour.duration >= :minDuration', { minDuration: filters.minDuration });
     }
@@ -128,7 +190,6 @@ export class ToursService {
       queryBuilder.andWhere('tour.duration <= :maxDuration', { maxDuration: filters.maxDuration });
     }
 
-    // Фильтр по сложности
     if (filters.difficulty) {
       queryBuilder.andWhere('tour.difficulty = :difficulty', { difficulty: filters.difficulty });
     }
@@ -154,7 +215,6 @@ export class ToursService {
         queryBuilder.orderBy('tour.created_at', sortOrder as 'ASC' | 'DESC');
         break;
       case SortField.POPULARITY:
-        // Сортировка по популярности (количество бронирований)
         queryBuilder
           .leftJoin('tour.bookings', 'booking')
           .addSelect('COUNT(booking.id)', 'bookingCount')
@@ -167,27 +227,70 @@ export class ToursService {
   }
 
   async findOne(id: string): Promise<Tour | null> {
-    return this.tourRepository.findOne({ where: { id } });
+    return this.tourRepository.createQueryBuilder('tour')
+      .leftJoinAndSelect('tour.partner', 'partner')
+      .where('tour.id = :id', { id })
+      .getOne();
   }
 
-  async update(id: string, updateTourDto: Partial<CreateTourDto>, partner_id: string): Promise<Tour | null> {
+  async update(id: string, updateTourDto: Partial<CreateTourDto>, userId: string): Promise<Tour | null> {
+    // Find partner by user ID from JWT
+    const partner = await this.usersService.findPartnerByUserId(userId);
+    if (!partner) {
+      throw new NotFoundException('Partner not found for this user');
+    }
+
     const tour = await this.tourRepository.findOne({ where: { id } });
     if (!tour) return null;
-    if (tour.partner_id !== partner_id) {
+    
+    if (tour.partner_id !== partner.id) {
       throw new ForbiddenException('You can only update your own tours');
     }
-    await this.tourRepository.update(id, updateTourDto as any);
+    
+    // Если не указана currency, сохраняем USD по умолчанию
+    const updateData = { ...updateTourDto };
+    if (updateData.currency === undefined) {
+      updateData.currency = 'USD';
+    }
+    await this.tourRepository.update(id, updateData as any);
     return this.findOne(id);
   }
 
-  async updateAvailability(id: string, availability: any[], partner_id: string): Promise<Tour | null> {
+  async updateAvailability(id: string, availability: any[], userId: string): Promise<Tour | null> {
+    // Find partner by user ID from JWT
+    const partner = await this.usersService.findPartnerByUserId(userId);
+    if (!partner) {
+      throw new NotFoundException('Partner not found for this user');
+    }
+
     const tour = await this.tourRepository.findOne({ where: { id } });
     if (!tour) return null;
-    if (tour.partner_id !== partner_id) {
+    
+    if (tour.partner_id !== partner.id) {
       throw new ForbiddenException('You can only update availability of your own tours');
     }
     
-    // Валидация данных доступности
+    for (const item of availability) {
+      if (item.available_slots > item.total_slots) {
+        throw new BadRequestException(`Available slots (${item.available_slots}) cannot be greater than total slots (${item.total_slots}) for date ${item.date}`);
+      }
+      if (item.available_slots < 0) {
+        throw new BadRequestException(`Available slots cannot be negative for date ${item.date}`);
+      }
+    }
+    
+    await this.tourRepository.update(id, { availability });
+    return this.findOne(id);
+  }
+
+  async updateAvailabilityByPartnerId(id: string, availability: any[], partnerId: string): Promise<Tour | null> {
+    const tour = await this.tourRepository.findOne({ where: { id } });
+    if (!tour) return null;
+    
+    if (tour.partner_id !== partnerId) {
+      throw new ForbiddenException('You can only update availability of your own tours');
+    }
+    
     for (const item of availability) {
       if (item.available_slots > item.total_slots) {
         throw new BadRequestException(`Available slots (${item.available_slots}) cannot be greater than total slots (${item.total_slots}) for date ${item.date}`);
@@ -224,12 +327,11 @@ export class ToursService {
   async getCities(): Promise<string[]> {
     const result = await this.tourRepository
       .createQueryBuilder('tour')
-      .select('DISTINCT tour.city', 'city')
+      .select('DISTINCT unnest(tour.city)', 'city')
       .where('tour.city IS NOT NULL')
       .andWhere('tour.status = :status', { status: 'active' })
-      .orderBy('tour.city', 'ASC')
+      .orderBy('city', 'ASC')
       .getRawMany();
-    
     return result.map(item => item.city);
   }
 
@@ -243,5 +345,40 @@ export class ToursService {
       .getRawMany();
     
     return result.map(item => item.language);
+  }
+
+  async remove(id: string, userId: string): Promise<void> {
+    // Find partner by user ID from JWT
+    const partner = await this.usersService.findPartnerByUserId(userId);
+    if (!partner) {
+      throw new NotFoundException('Partner not found for this user');
+    }
+    const tour = await this.tourRepository.findOne({ where: { id } });
+    if (!tour) {
+      throw new NotFoundException('Tour not found');
+    }
+    if (tour.partner_id !== partner.id) {
+      throw new ForbiddenException('You can only delete your own tours');
+    }
+    await this.tourRepository.delete(id);
+  }
+
+  async getTourPrice(tourId: string, targetCurrency: string = 'UZS') {
+    const tour = await this.tourRepository.findOne({ where: { id: tourId } });
+    if (!tour) throw new NotFoundException('Tour not found');
+    if (!tour.price || !tour.currency) throw new BadRequestException('Tour price or currency not set');
+
+    const fromRate = await this.currencyService.getCurrencyRate(tour.currency).then(r => r.rate); // курс валюты тура к UZS
+    const toRate = await this.currencyService.getCurrencyRate(targetCurrency).then(r => r.rate);  // курс целевой валюты к UZS
+
+    if (!fromRate || !toRate) {
+      throw new BadRequestException('Currency rate not found');
+    }
+
+    // Переводим цену в UZS, затем в целевую валюту
+    const priceInUZS = tour.price * fromRate;
+    const priceInTarget = priceInUZS / toRate;
+
+    return { price: priceInTarget, currency: targetCurrency };
   }
 }

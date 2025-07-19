@@ -3,7 +3,9 @@
     width: 100%;
     margin: 80px auto 0;
 }
-
+.containerParent{
+    padding: 0 20px ;
+}
 .title{
     color: #242D3F;
     font-size: 30px;
@@ -120,6 +122,7 @@
     width: fit-content;
     gap: 3.5px;
     padding: 8px 6px;
+    align-items: center;
 }
 .featureText{
     font-size: 14px;
@@ -188,7 +191,7 @@
 }
 .more{
     background-color: #E1EFFF;
-    width: 368px;
+    max-width: 368px;
     height: 50px;
     display: flex;
     justify-content: center;
@@ -208,4 +211,29 @@
     display: flex;
     justify-content: center;
     margin-top: 30px;
+}
+.img{
+    width: 100%;
+    aspect-ratio: 368/241;
+    object-fit: cover;
+}
+
+@media (max-width:900px) {
+    .item{
+        width: calc(50% - 10px);
+        height: auto;
+    }
+    .title{
+        font-size: 24px;
+    }
+}
+
+@media (max-width:655px) {
+    .item{
+        width: calc(100%);
+        height: auto;
+    }
+    .title{
+        font-size: 22px;
+    }
 }

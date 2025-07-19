@@ -1,25 +1,155 @@
 "use client";
-import { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import classes from "./FilterTransfer.module.css";
 import Select from "../ui/Select";
 import TextField from "../ui/TextField";
 import Calendar from "../ui/Calendar";
-function FilterTransfer() {
+import { Dict } from "@/types";
+import AutocompleteInput from "../AutoComplateInput";
+import { Bounce, ToastContainer, toast } from "react-toastify";
+
+function FilterTransfer({ dict }: { dict: Dict }) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const [type, setType] = useState<"departure" | "arrival">("arrival");
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    departure: string;
+    arrival: string;
+    date: Date | null;
+    city: string | null;
+    airaportCity: string | null;
+  }>({
     departure: "",
     arrival: "",
     date: null,
+    city: null,
+    airaportCity: null,
   });
+
+  useEffect(() => {
+    const initialDeparture = searchParams.get("departure") || "";
+    const initialDate = searchParams.get("date") || null;
+    const initialTime = searchParams.get("time") || null;
+
+    setFormData({
+      departure: initialDeparture,
+      arrival: airaports[1].label,
+      date:
+        initialDate && initialTime
+          ? new Date(`${initialDate}T${initialTime}`)
+          : null,
+      city: null,
+      airaportCity: null,
+    });
+  }, []);
+
   const airaports = [
-    "Выберите аэропорт",
-    "Tashkent International Airport (TAS)",
-    "Samarkand International Airport (SKD)",
-    "Bukhara International Airport (BHK)",
-    "Urgench International Airport (UGC)",
+    { label: dict["selectAirport"], value: dict["selectAirport"] },
+    {
+      label: "Tashkent International Airport (TAS)",
+      value: "Tashkent",
+    },
   ];
+
+  const handelAddressChange = async (value: string) => {
+    if (!value) {
+      setFormData({ ...formData, city: "", departure: "" });
+      return;
+    }
+
+    setFormData({ ...formData, departure: value });
+  };
+
+  function getCityFromPlace(
+    place: google.maps.places.PlaceResult
+  ): string | null {
+    if (!place.address_components) return null;
+
+    for (const component of place.address_components) {
+      if (component.types.includes("locality")) {
+        return component.long_name;
+      }
+
+      // Fallback if "locality" isn't present
+      if (component.types.includes("administrative_area_level_1")) {
+        return component.long_name;
+      }
+    }
+
+    return null;
+  }
+
+  const onPlaceSelected = async (place: any) => {
+    const city = getCityFromPlace(place);
+    if (
+      city != "Tashkent" &&
+      city != "Тоshkent" &&
+      !place.formatted_address.includes("Tashkent")
+    ) {
+      toast.warn(dict["selectAddressInsideCityTashkent"], {
+        position: "top-center",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: false,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+        transition: Bounce,
+      });
+      updateQueryParams({ departure: "" });
+      setFormData({ ...formData, departure: "" });
+      return;
+    }
+    updateQueryParams({ departure: place.formatted_address });
+    setFormData({ ...formData, departure: place.formatted_address, city });
+  };
+
+  const changeAirport = () => {};
+
+  const updateQueryParams = (params: Record<string, string>) => {
+    const current = new URLSearchParams(Array.from(searchParams.entries()));
+
+    Object.entries(params).forEach(([key, value]) => {
+      if (value) {
+        current.set(key, value);
+      } else {
+        current.delete(key);
+      }
+    });
+
+    router.replace(`?${current.toString()}`);
+  };
+
+  const handleDateChange = (date: Date | null) => {
+    setFormData((prev) => ({ ...prev, date }));
+
+    if (date) {
+      const dateString = date.toISOString().split("T")[0]; // yyyy-mm-dd
+      const timeString = date.toTimeString().split(" ")[0].slice(0, 5); // HH:MM
+      updateQueryParams({ date: dateString, time: timeString });
+    } else {
+      updateQueryParams({ date: "", time: "" });
+    }
+  };
+
   return (
     <div>
+      <ToastContainer
+        position="top-center"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick={false}
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+        transition={Bounce}
+      />
+
       <div className={classes.selectContent}>
         <div onClick={() => setType("arrival")} className={classes.select}>
           <div
@@ -33,7 +163,7 @@ function FilterTransfer() {
               className={classes.circle}
             ></div>
           </div>
-          <p className={classes.selectText}>Прибытие</p>
+          <p className={classes.selectText}>{dict["arrival"]}</p>
         </div>
         <div onClick={() => setType("departure")} className={classes.select}>
           <div
@@ -47,15 +177,15 @@ function FilterTransfer() {
               className={classes.circle}
             ></div>
           </div>
-          <p className={classes.selectText}>Отправка</p>
+          <p className={classes.selectText}>{dict["transfer_departure"]}</p>
         </div>
       </div>
       <div className={classes.filter}>
         {type == "arrival" && (
           <>
-            <div style={{ flex: 1 }}>
+            <div className={classes.carContainer} style={{ flex: 1 }}>
               <Select
-                options={airaports}
+                options={[airaports[1].label]}
                 svg={
                   <svg
                     width="21"
@@ -70,24 +200,16 @@ function FilterTransfer() {
                     />
                   </svg>
                 }
-                label="Из аэропорта"
-                setValue={(value: string) =>
-                  setFormData({
-                    ...formData,
-                    arrival: value == airaports[0] ? "" : value,
-                  })
-                }
-                value={
-                  formData.arrival === "" ? airaports[0] : formData.arrival
-                }
+                label={dict["fromAirport"]}
+                setValue={changeAirport}
+                value={airaports[1].label}
               />
             </div>
-            <div style={{ flex: 1 }}>
-              <TextField
+            <div className={classes.carContainer} style={{ flex: 1 }}>
+              <AutocompleteInput
                 value={formData.departure}
-                setValue={(value: string) =>
-                  setFormData({ ...formData, departure: value })
-                }
+                setValue={handelAddressChange}
+                onPlaceSelected={onPlaceSelected}
                 svg={
                   <svg
                     width="21"
@@ -102,21 +224,20 @@ function FilterTransfer() {
                     />
                   </svg>
                 }
-                placeHolder="Введите адрес"
-                label="Куда"
+                placeHolder={dict["enterAddress"]}
+                label={dict["toWhere"]}
               />
+              <div className={classes.menuWrapper}></div>
             </div>
           </>
         )}
 
         {type == "departure" && (
           <>
-            <div style={{ flex: 1 }}>
+            <div className={classes.carContainer} style={{ flex: 1 }}>
               <TextField
                 value={formData.departure}
-                setValue={(value: string) =>
-                  setFormData({ ...formData, departure: value })
-                }
+                setValue={handelAddressChange}
                 svg={
                   <svg
                     width="21"
@@ -131,13 +252,13 @@ function FilterTransfer() {
                     />
                   </svg>
                 }
-                placeHolder="Введите адрес"
-                label="Откуда"
+                placeHolder={dict["enterAddress"]}
+                label={dict["fromWhere"]}
               />
             </div>
-            <div style={{ flex: 1 }}>
+            <div className={classes.carContainer} style={{ flex: 1 }}>
               <Select
-                options={airaports}
+                options={[airaports[1].label]}
                 svg={
                   <svg
                     width="21"
@@ -152,24 +273,17 @@ function FilterTransfer() {
                     />
                   </svg>
                 }
-                label="В аэропорт"
-                setValue={(value: string) =>
-                  setFormData({
-                    ...formData,
-                    arrival: value == airaports[0] ? "" : value,
-                  })
-                }
-                value={
-                  formData.arrival === "" ? airaports[0] : formData.arrival
-                }
+                label={dict["toAirport"]}
+                setValue={changeAirport}
+                value={airaports[1].label}
               />
             </div>
           </>
         )}
 
-        <div style={{ flex: 1 }}>
+        <div className={classes.carContainer} style={{ flex: 1 }}>
           <Calendar
-            label="Дата и время"
+            label={dict["dateAndTime"]}
             svg={
               <svg
                 width="21"
@@ -188,6 +302,7 @@ function FilterTransfer() {
                 />
               </svg>
             }
+            setValue={handleDateChange}
             value={formData.date}
           />
         </div>

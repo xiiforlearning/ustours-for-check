@@ -2,7 +2,8 @@
 import { useEffect, useRef, useState } from "react";
 import classes from "./MainSearch.module.css";
 import { listType } from "@/consts";
-function TypeExcursion() {
+import { Dict } from "@/types";
+function TypeExcursion({ dict }: { dict: Dict }) {
   const [value, setValue] = useState("");
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -27,26 +28,27 @@ function TypeExcursion() {
 
   const handleToggle = () => setOpen(true);
 
-  console.log(open);
-
   return (
     <div onClick={handleToggle} className={classes.selectExcursion}>
       {open && (
         <div ref={wrapperRef} className={classes.modalType}>
           <div className={classes.cityWrapper}>
             {listType
-              .filter((i) => i !== "Тип экскурсии")
-              .map((city) => (
+              .filter((i) => i !== "typeExcursion")
+              .map((type) => (
                 <p
                   onClick={(e) => {
                     e.stopPropagation();
-                    setValue(city);
+                    setValue(type);
                     setOpen(false);
                   }}
                   className={classes.city}
-                  key={city}
+                  key={type}
                 >
-                  {city}
+                  {
+                    //@ts-expect-error aaa
+                    dict[type]
+                  }
                 </p>
               ))}
           </div>
@@ -69,11 +71,15 @@ function TypeExcursion() {
         style={{ color: value ? "#000" : "#848484" }}
         className={classes.searchText}
       >
-        {value || "Тип экскурсии"}
+        {
+          //@ts-expect-error aaa
+          dict[value] || dict["typeExcursion"]
+        }
       </p>
       <svg
         width="17"
         height="16"
+        className={classes.arrow}
         viewBox="0 0 17 16"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"

@@ -9,49 +9,49 @@ export enum PartnerType {
 @Entity()
 export class Partner {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column()
-  phone: string;
+  phone!: string;
 
   @Column({ default: false })
-  isPhoneVerified: boolean;
+  isPhoneVerified!: boolean;
 
   @Column({
     type: 'enum',
     enum: PartnerType,
   })
-  partnerType: PartnerType;
+  partnerType!: PartnerType;
 
   @Column({ nullable: true })
-  firstName: string;
+  firstName?: string;
 
   @Column({ nullable: true })
-  lastName: string;
+  lastName?: string;
 
   @Column({ nullable: true })
-  companyName: string;
+  companyName?: string;
 
   @Column('text', { array: true, nullable: true })
-  spokenLanguages: string[];
+  spokenLanguages?: string[];
 
   @Column('text', { array: true, nullable: true })
-  certificates: string[];
+  certificates?: string[];
 
   @Column({ nullable: true })
-  avatar: string;
+  avatar?: string;
 
   @Column({ type: 'int', nullable: true })
-  yearsOfExperience: number;
+  yearsOfExperience?: number;
 
   @Column({ type: 'text', nullable: true })
-  about: string;
+  about?: string;
 
   @Column({ nullable: true })
-  whatsapp: string;
+  whatsapp?: string;
 
   @Column({ nullable: true })
-  telegram: string;
+  telegram?: string;
 
   @OneToOne(() => User, user => user.partner, { onDelete: 'CASCADE' })
   @JoinColumn()

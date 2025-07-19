@@ -8,17 +8,16 @@
     background-color: #F5F5F5;
 }
 
-.input{
-    width: 100%;
-    height: 100%;
-    color: #000;
-    font-size: 16px;
-    padding-left: 44px;
-    background-color: #F5F5F5;
-    outline: none;
-    border: none;
-
-}
+    .input{
+        width: 100%;
+        height: 100%;
+        color: #000;
+        font-size: 16px;
+        padding-left: 44px;
+        background-color: #F5F5F5;
+        outline: none;
+        border: none;
+    }
 
 .input::placeholder{
     color: #848484;

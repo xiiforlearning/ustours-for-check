@@ -1,0 +1,167 @@
+.container{
+    width: 100%;
+    padding: 0 20px;
+    flex: 1;
+}
+
+.wrapper{
+    width: 100%;
+    max-width: 1144px;
+    margin: 30px auto 20px; 
+}
+
+.editBlock{
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 15px;
+    background-color: #fff;
+    border-radius: 8px;
+    gap: 30px;
+    align-items: center;
+}
+.editBtn,.saveBtn{
+    min-width: 190px;
+    padding: 0 20px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    background-color: #328AEE;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.saveBtn{
+    background-color: #1BB747;
+}
+.saveBtnText{
+    color: #fff;
+    font-size: 17px;
+}
+
+.editText{
+    color: #fff;
+    font-size: 17px;
+}
+.left{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.editCancel{
+    cursor: pointer;
+    color: #328AEE;
+    font-size: 18px;
+}
+.content{
+    background-color: #fff;
+    padding: 30px;
+    width: 100%;
+    border-radius: 12px;
+    margin-top: 30px;
+    margin-bottom: 200px;
+}
+.title{
+    font-size: 20px;
+    color: #242D3F;
+}
+
+.desc{
+    color: #242D3F;
+    font-size: 14px;
+    margin-top: 15px;
+    margin-bottom: 15px;
+}
+
+.selectPhoto{
+    display: flex;
+    align-items: center;   
+    gap: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.selectPhotoText{
+    color: #328AEE;
+    font-size: 14px;
+}
+
+.poster{
+    max-width: 150px;
+    border-radius: 8px;
+}
+.listFields{
+    display: flex;
+    gap: 16px;
+}
+.listField{
+    margin-top: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    flex: 1;
+}
+
+.imageList{
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+.photo{
+    width: 150px;
+    aspect-ratio: 3/2;
+    border-radius: 8px;
+    object-fit: cover;
+}
+.photoWrapper{
+    position: relative;
+}
+.close{
+    width: 30px;
+    height: 30px;
+    position: absolute;
+    right: -15px;
+    top: -15px;
+    cursor: pointer;
+}
+.description{
+    margin-top: 20px;
+}
+
+.dayProgramms{
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.listIncludeTitle{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.listIncludeTitle p{
+    font-size: 18px;
+}
+.listInclude{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+    width: 400px;
+}
+
+.listIncludeItem{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.delateBtn{
+    padding: 8px;
+    border-radius: 5px;
+    background-color: #FFE5E5;
+    cursor: pointer;
+}

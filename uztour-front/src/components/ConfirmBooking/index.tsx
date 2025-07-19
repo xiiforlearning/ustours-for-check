@@ -1,13 +1,22 @@
 "use client";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import classes from "./ConfirmBooking.module.css";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import TextField from "../ui/TextField";
 import Image from "next/image";
 import PrimaryBtn from "../ui/PrimaryBtn";
+import { Dict } from "@/types";
+import useStore from "@/store/useStore";
 
-function ConfirmBooking({ router }: { router: AppRouterInstance }) {
+function ConfirmBooking({
+  router,
+  dict,
+}: {
+  router: AppRouterInstance;
+  dict: Dict;
+}) {
+  const user = useStore((state) => state.user);
   const modalRef = useRef<HTMLDivElement>(null);
   const searchParams = useSearchParams();
   const [formData, setFormData] = useState({
@@ -15,73 +24,58 @@ function ConfirmBooking({ router }: { router: AppRouterInstance }) {
     phone: "",
     telegram: "",
     whatsupp: "",
+    name: "",
   });
 
-  const closeModal = useCallback(() => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete("confirm-modal");
-    router.replace(`?${params.toString()}`, { scroll: false });
-  }, [searchParams, router]);
-
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        modalRef.current &&
-        !modalRef.current.contains(event.target as Node)
-      ) {
-        closeModal();
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [closeModal]);
+    if (user) {
+      setFormData({
+        email: user.user.email,
+        phone: "",
+        telegram: "",
+        whatsupp: "",
+        name: "",
+      });
+    }
+  }, [user]);
+
+  // const closeModal = useCallback(() => {
+  //   const params = new URLSearchParams(searchParams.toString());
+  //   params.delete("confirm-modal");
+  //   router.replace(`?${params.toString()}`, { scroll: false });
+  // }, [searchParams, router]);
 
   const handleClick = () => {
-    const params = searchParams.toString();
-    router.push("/booking?" + params.replace("confirm-modal=true", ""));
+    if (formData.email) {
+      const params = new URLSearchParams(searchParams.toString());
+      params.delete("confirm-modal");
+      router.replace(
+        `?${params.toString()}&email=${formData.email}&phone=${
+          formData.phone
+        }&telegram=${formData.telegram}&whatsupp=${formData.whatsupp}&name=${
+          formData.name
+        }`,
+        { scroll: false }
+      );
+    }
   };
   return (
     <>
       <div className={classes.overlay}>
         <div ref={modalRef} className={classes.modal}>
           <div className={classes.header}>
-            <div style={{ width: 24 }}></div>
-            <h2 className={classes.title}>Бронирование экскурсии</h2>
-            <div
-              onClick={closeModal}
-              style={{ cursor: "pointer" }}
-              className={classes.side}
-            >
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M6 6L18 18"
-                  stroke="#BBBBBB"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M6 18L18 6"
-                  stroke="#BBBBBB"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-            </div>
+            <h2 className={classes.title}>{dict.bookingTitle}</h2>
           </div>
-          <p className={classes.text}>
-            Пожалуйста, укажите свои контактные данные для связи по вашему
-            бронированию
-          </p>
+          <p className={classes.text}>{dict.fillContactDetails}</p>
+          <TextField
+            placeHolder=""
+            label={dict.name}
+            value={formData.name}
+            setValue={(value: string) =>
+              setFormData({ ...formData, name: value })
+            }
+          />
+          <div style={{ height: 16 }} />
           <TextField
             placeHolder=""
             label="Email*"
@@ -108,7 +102,7 @@ function ConfirmBooking({ router }: { router: AppRouterInstance }) {
           <TextField
             value={formData.phone}
             isPhone={true}
-            label="Номер телефона"
+            label={dict.phoneNumber}
             setValue={(value) => setFormData({ ...formData, phone: value })}
             placeHolder={"+998 __ ___ __ __"}
             svg={
@@ -130,7 +124,11 @@ function ConfirmBooking({ router }: { router: AppRouterInstance }) {
             placeHolder={""}
           />
           <div style={{ height: 16 }} />
-          <PrimaryBtn text="Продолжить" onClick={handleClick} />
+          <PrimaryBtn
+            disabled={!formData.name}
+            text={dict.continue}
+            onClick={handleClick}
+          />
         </div>
       </div>
     </>

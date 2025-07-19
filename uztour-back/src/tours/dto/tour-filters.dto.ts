@@ -17,12 +17,14 @@ export enum SortField {
 
 export class TourFiltersDto {
   @ApiPropertyOptional({
-    description: 'Город для поиска туров',
-    example: 'Самарканд'
+    description: 'Города для поиска туров',
+    example: ['Самарканд', 'Бухара'],
+    type: [String]
   })
   @IsOptional()
-  @IsString()
-  city?: string;
+  @IsArray()
+  @IsString({ each: true })
+  city?: string[];
 
   @ApiPropertyOptional({
     description: 'Дата начала тура (YYYY-MM-DD)',

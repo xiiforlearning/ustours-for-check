@@ -49,6 +49,7 @@
     align-items: center;
     border-radius: 8px;
     padding: 0 6px;
+    flex-shrink: 0;
 }
 
 .infoItemText{
@@ -92,9 +93,48 @@
     flex-direction: column;
     justify-content: space-between;
     align-items: flex-end;
+    flex-shrink: 0;
 }
 .price{
     color: #328AEE;
     font-weight: 700;
     font-size: 22px;
 }
+
+
+@media (max-width:830px) {
+    .item{
+        flex-direction: column;
+        width: calc(50% - 4px);
+    }
+    .container{
+        flex-wrap: wrap;
+        flex-direction: row;
+    }
+    .topInfo{
+        flex-wrap: wrap;
+    }
+    .name{
+        width: 100%;
+    }
+    .priceContent{
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        width: 100%;
+        height: auto;
+        align-items: center;
+        gap: 40px;
+    }
+    .price{
+        flex-shrink: 0;
+    }
+}
+
+@media (max-width:661px) {
+     .item{
+        flex-direction: column;
+        width: 100%;
+    }
+}
+

@@ -23,25 +23,21 @@ export class UsersService {
   ) {}
 
   async createCustomer(createCustomerDto: CreateCustomerDto): Promise<{ user: User; customer: Customer }> {
-    // Проверка уникальности email
     const existingUser = await this.usersRepository.findOne({ where: { email: createCustomerDto.email } });
     if (existingUser) {
       throw new ConflictException('Email already in use');
     }
 
-    // Создаем базового пользователя
     const user = this.usersRepository.create({
       email: createCustomerDto.email
     });
     await this.usersRepository.save(user);
     
-    // Создаем профиль клиента
     const customer = this.customersRepository.create({
       user
     });
     await this.customersRepository.save(customer);
     
-    // Обновляем связь в User
     user.customer = customer;
     await this.usersRepository.save(user);
     
@@ -49,7 +45,6 @@ export class UsersService {
   }
 
   async createPartner(createPartnerDto: CreatePartnerDto): Promise<{ user: User; partner: Partner }> {
-    // Проверка уникальности email и телефона
     const existingEmail = await this.usersRepository.findOne({ where: { email: createPartnerDto.email } });
     if (existingEmail) {
       throw new ConflictException('Email already in use');
@@ -60,14 +55,12 @@ export class UsersService {
       throw new ConflictException('Phone number already in use');
     }
 
-    // Создаем базового пользователя
     const user = this.usersRepository.create({
       email: createPartnerDto.email,
       isEmailVerified: true
     });
     await this.usersRepository.save(user);
     
-    // Создаем профиль партнера
     const partner = this.partnersRepository.create({
       phone: createPartnerDto.phone,
       partnerType: createPartnerDto.partnerType,
@@ -85,7 +78,6 @@ export class UsersService {
     });
     await this.partnersRepository.save(partner);
     
-    // Обновляем связь в User
     user.partner = partner;
     await this.usersRepository.save(user);
     
@@ -150,7 +142,6 @@ export class UsersService {
   }
 
   async updateUser(userId: string, updateDto: any): Promise<User> {
-    // Only allow updating certain fields
     const allowedFields = ['email', 'isEmailVerified'];
     const updateData: any = {};
     for (const key of allowedFields) {
@@ -158,7 +149,6 @@ export class UsersService {
         updateData[key] = updateDto[key];
       }
     }
-    // If email is changed, reset isEmailVerified to false
     if (updateData.email !== undefined) {
       updateData.isEmailVerified = false;
     }
@@ -182,5 +172,25 @@ export class UsersService {
     }
     await this.partnersRepository.save(partner);
     return partner;
+  }
+
+  async findPartnerByUserId(userId: string): Promise<Partner | null> {
+    const user = await this.usersRepository.findOne({ 
+      where: { id: userId },
+      relations: ['partner']
+    });
+    
+    if (!user || !user.partner) {
+      return null;
+    }
+    
+    return user.partner;
+  }
+
+  async findUserWithPartner(userId: string): Promise<User | null> {
+    return this.usersRepository.findOne({ 
+      where: { id: userId },
+      relations: ['partner']
+    });
   }
 }

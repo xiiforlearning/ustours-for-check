@@ -2,18 +2,21 @@ import OTPInput from "react-otp-input";
 import classes from "./LoginModal.module.css";
 import { useEffect, useRef, useState } from "react";
 import PrimaryBtn from "../ui/PrimaryBtn";
+import { Dict } from "@/types";
 function Comfirmation({
   error,
   submitCode,
   resendCode,
   title,
   loading,
+  dict,
 }: {
   error: string;
   submitCode: ({ otp }: { otp: string }) => void;
   resendCode: () => void;
   title?: string;
   loading?: boolean;
+  dict: Dict;
 }) {
   const [otp, setOtp] = useState("");
   const [time, setTime] = useState(60);
@@ -41,17 +44,10 @@ function Comfirmation({
   return (
     <>
       <p className={classes.comfirmationText}>
-        {title ? (
-          title
-        ) : (
-          <>
-            Код отправлен на ваш Email<br></br>Проверьте папку «Входящие» и
-            «Спам»
-          </>
-        )}
+        {title ? title : <>{dict["confirmation.code_sent"]}</>}
       </p>
 
-      <p className={classes.enterCode}>Введите код</p>
+      <p className={classes.enterCode}>{dict["confirmation.enter_code"]}</p>
       <OTPInput
         value={otp}
         onChange={setOtp}
@@ -72,7 +68,7 @@ function Comfirmation({
       <PrimaryBtn
         loading={loading}
         onClick={() => submitCode({ otp })}
-        text="Продолжить"
+        text={dict["continue"]}
       />
 
       <div
@@ -88,7 +84,17 @@ function Comfirmation({
           style={{ color: time ? "#848484" : "#328AEE" }}
           className={classes.timerText}
         >
-          {time ? <>Отправить снова через: {time} сек</> : <>Отправить снова</>}
+          {time ? (
+            <>
+              {" "}
+              {dict["confirmation.resend_in"].replace(
+                "{{time}}",
+                time.toString()
+              )}{" "}
+            </>
+          ) : (
+            <> {dict["confirmation.resend"]} </>
+          )}
         </h2>
       </div>
     </>

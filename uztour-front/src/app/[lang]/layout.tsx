@@ -56,6 +56,11 @@ export default async function Root(props: {
 
   return (
     <html>
+      <script
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBnjwmO6DLPoSChny0l-4yeJRoViEbbdhw&libraries=places&language=en"
+        async
+        defer
+      ></script>
       <body>
         <InitialLogic />
         <Suspense>
@@ -63,7 +68,7 @@ export default async function Root(props: {
         </Suspense>
 
         {children}
-        <Footer />
+        <Footer dict={dict} />
       </body>
     </html>
   );

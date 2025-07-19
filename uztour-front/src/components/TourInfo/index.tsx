@@ -1,26 +1,24 @@
+import { Dict, ResponseTour } from "@/types";
 import classes from "./TourInfo.module.css";
-function TourInfo() {
+function TourInfo({
+  dict,
+  currentExcursion,
+}: {
+  dict: Dict;
+  currentExcursion: ResponseTour;
+}) {
   return (
     <div className={classes.container}>
-      <h2 className={classes.title}>Основная информация</h2>
+      <h2 className={classes.title}>{dict["tour.info.title"]}</h2>
       <p className={classes.desc}>
-        <span>
-          Наслаждайтесь живым общением и новыми открытиями каждый день в одном
-          из самых популярных туров по Узбекистану.
-        </span>
+        {currentExcursion.description}
+        {/* <span>{dict["tour.info.description"]}</span>
         <br />
         <br />
-        Классический групповой тур в Самарканд — это уникальная возможность
-        окунуться в атмосферу древнего Востока в компании единомышленников из
-        разных уголков СНГ. Вы познакомитесь с богатым историческим наследием
-        одного из старейших городов Средней Азии, прогуляетесь по улочкам, по
-        которым ходили великие ученые и правители, и полюбуетесь великолепием
-        средневековой архитектуры.
+        {dict["tour.info.description2"]}
         <br />
         <br />
-        Мы уверены, что Самарканд оставит в вашем сердце яркий след, а
-        воспоминания об этом путешествии ещё долго будут вызывать желание
-        вернуться вновь.
+        {dict["tour.info.description3"]} */}
       </p>
       <div className={classes.features}>
         <div className={classes.featuresRow}>
@@ -37,7 +35,17 @@ function TourInfo() {
                 fill="black"
               />
             </svg>
-            <p>Город: Самарканд</p>
+            <p>
+              {dict["city"]}:{" "}
+              {currentExcursion.city.map((city, index) =>
+                index == 0
+                  ? // @ts-expect-error aaa
+                    dict[city]
+                  : // @ts-expect-error aaa
+                    dict[city].toLocaleLowerCase() +
+                    (index !== currentExcursion.city.length - 1 ? ", " : "")
+              )}
+            </p>
           </div>
           <div className={classes.feature}>
             <svg
@@ -53,7 +61,17 @@ function TourInfo() {
               />
             </svg>
 
-            <p>Языки: Английский, русский</p>
+            <p>
+              {currentExcursion.languages.map(
+                (lang, index) =>
+                  (index == 0
+                    ? // @ts-expect-error aaa
+                      dict[lang]
+                    : // @ts-expect-error aaa
+                      dict[lang]?.toLocaleLowerCase()) +
+                  (index !== currentExcursion.languages.length - 1 ? ", " : "")
+              )}
+            </p>
           </div>
           <div className={classes.feature}>
             <svg
@@ -69,7 +87,12 @@ function TourInfo() {
               />
             </svg>
 
-            <p>Длительность: 4 дня</p>
+            <p>
+              {dict["duration"]}: {currentExcursion.duration}{" "}
+              {currentExcursion.duration_unit == "days"
+                ? dict["day"]
+                : dict["hour"]}
+            </p>
           </div>
         </div>
         <div className={classes.featuresRow}>
@@ -88,7 +111,12 @@ function TourInfo() {
                 />
               </svg>
 
-              <p>Тип экскурсии: групповая (4-15 чел.)</p>
+              <p>
+                {dict["typeExcursion"]}:{" "}
+                {currentExcursion.type != "group"
+                  ? dict["individual"]
+                  : dict["group"]}
+              </p>
             </div>
             <div className={classes.feature}>
               <svg
@@ -104,7 +132,13 @@ function TourInfo() {
                 />
               </svg>
 
-              <p>Отправление: из Ташкента</p>
+              <p>
+                {dict["departure"]}:{" "}
+                {
+                  //@ts-expect-error aaa
+                  dict[currentExcursion.departure_city]
+                }
+              </p>
             </div>
             <div className={classes.feature}>
               <svg
@@ -120,7 +154,9 @@ function TourInfo() {
                 />
               </svg>
 
-              <p>Сложность: средняя</p>
+              <p>
+                {dict["complexity"]}: {dict[currentExcursion.difficulty]}
+              </p>
             </div>
           </div>
         </div>

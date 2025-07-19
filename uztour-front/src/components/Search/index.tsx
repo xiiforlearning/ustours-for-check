@@ -1,5 +1,6 @@
+import { Dict } from "@/types";
 import classes from "./Search.module.css";
-function Search() {
+function Search({ dict }: { dict: Dict }) {
   return (
     <div className={classes.search}>
       <svg
@@ -20,7 +21,7 @@ function Search() {
       <input
         autoComplete="off"
         type="text"
-        placeholder="Поиск направлений"
+        placeholder={dict["search"]}
         className={classes.input}
       ></input>
     </div>

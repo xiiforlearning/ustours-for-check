@@ -2,9 +2,11 @@
     display: flex;
     margin-top: 30px;
     justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
 }
 .left{
     gap: 4px;
     display: flex;
-
+    flex-wrap: wrap;
 }

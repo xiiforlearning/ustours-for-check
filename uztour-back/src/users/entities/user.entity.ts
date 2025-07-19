@@ -6,16 +6,16 @@ import { Partner } from './partner.entity';
 @Entity()
 export class User {
   @PrimaryGeneratedColumn('uuid')
-  id: string = uuidv4();
+  id!: string;
 
   @Column({ unique: true })
-  email: string;
+  email!: string;
 
   @Column({ default: false })
-  isEmailVerified: boolean;
+  isEmailVerified!: boolean;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 
   @OneToOne(() => Customer, customer => customer.user, { nullable: true })
   @JoinColumn()

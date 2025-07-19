@@ -1,3 +1,6 @@
+.wrapper{
+    padding: 0 20px;
+}
 .container{
     max-width: 1148px;
     width: 100%;
@@ -10,6 +13,7 @@
     margin-top: 24px;
     margin-bottom: 30px;
     gap: 5px;
+    flex-wrap: wrap;
 }
 .headerText{
     font-size: 16px;
@@ -40,4 +44,11 @@
 .content{
     display: flex;
     gap: 30px;
+}
+
+@media (max-width:780px) {
+    .content{
+        flex-direction: column-reverse;
+    }
+    
 }

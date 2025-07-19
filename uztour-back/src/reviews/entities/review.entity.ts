@@ -12,20 +12,20 @@ import { Tour } from '../../tours/entities/tour.entity';
 @Entity()
 export class Review {
   @PrimaryGeneratedColumn('uuid')
-  id: string = uuidv4();
+  id!: string;
 
   @Column('text')
-  content: string;
+  content!: string;
 
   @Column('int')
-  rating: number; // 1-5
+  rating!: number;
 
   @ManyToOne(() => User)
-  user: User;
+  user!: User;
 
-  @ManyToOne(() => Tour, (tour) => tour.reviews)
-  tour: Tour;
+  @ManyToOne(() => Tour)
+  tour!: Tour;
 
   @CreateDateColumn()
-  createdAt: Date;
+  createdAt!: Date;
 }

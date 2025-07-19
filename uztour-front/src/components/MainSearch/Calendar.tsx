@@ -1,9 +1,10 @@
 "use client";
+import { Dict } from "@/types";
 import classes from "./MainSearch.module.css";
 import { Calendar as CalendarComp } from "primereact/calendar";
 import "primereact/resources/themes/lara-light-cyan/theme.css";
-import { Ref, RefAttributes, useRef, useState } from "react";
-function Calendar() {
+import { useRef, useState } from "react";
+function Calendar({ dict }: { dict: Dict }) {
   const today = new Date();
   const tomorrow = new Date(today);
   const ref = useRef<CalendarComp | null>(null);
@@ -19,7 +20,7 @@ function Calendar() {
   function formatDate(date: Date): string {
     const day = String(date.getDate()).padStart(2, "0");
     const month = String(date.getMonth() + 1).padStart(2, "0"); // months are 0-indexed
-    const year = String(date.getFullYear()).slice(-2); // get last two digits
+    const year = String(date.getFullYear()); // get last two digits
     return `${day}.${month}.${year}`;
   }
 
@@ -61,12 +62,13 @@ function Calendar() {
           style={{ color: value ? "#000" : "#848484" }}
           className={classes.searchText}
         >
-          {value ? formatDate(value) : "Когда"}
+          {value ? formatDate(value) : dict["when"]}
         </p>
         <svg
           width="17"
           height="16"
           viewBox="0 0 17 16"
+          className={classes.arrow}
           fill="none"
           xmlns="http://www.w3.org/2000/svg"
         >

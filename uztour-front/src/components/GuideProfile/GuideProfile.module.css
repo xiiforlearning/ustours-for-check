@@ -1,0 +1,160 @@
+.editBlock{
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    padding: 15px;
+    background-color: #fff;
+    border-radius: 8px;
+    gap: 30px;
+    align-items: center;
+}
+.editBtn{
+    min-width: 190px;
+    padding: 0 20px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    background-color: #328AEE;
+    border-radius: 8px;
+    cursor: pointer;
+}
+.editText{
+    color: #fff;
+    font-size: 17px;
+}
+.info{
+    background-color: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    width: 100%;
+    margin-top: 20px;
+    display: flex;
+    gap: 30px;
+    padding-bottom: 40px;
+}
+.avatar{
+    width: 134px;
+    height: 134px;
+    border-radius: 100px;
+    object-fit: cover;
+}
+.infoItem{
+    display: flex;
+    gap: 20px;
+}
+.label{
+    width: 180px;
+    font-size: 16px;
+    color: #848484;
+    flex-shrink: 0; 
+
+}
+.infoBlock{
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.infoText{
+    font-size: 18px;
+    color: #242D3F;
+}
+.infoText span{
+    color: #848484;
+}
+.line{
+    height: 2px;
+    background-color: #DDDDDD;
+    margin: 24px 0;
+    width: 100%;
+}
+.contact{
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+.contactText{
+    font-size: 18px;
+    color: #328AEE;
+}
+.experience{
+    padding: 10px;
+    border-radius: 8px;
+    background-color: #F5F5F5;
+    font-size: 18px;
+    color: #242D3F;
+}
+
+.editCancel{
+    cursor: pointer;
+    color: #328AEE;
+    font-size: 18px;
+}
+
+.selectPhoto{
+    display: flex;
+    align-items: center;   
+    gap: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.selectPhotoText{
+    color: #328AEE;
+    font-size: 14px;
+}
+.labelSelect{
+    color: #000;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+.alert{
+    width: 100%;
+    background-color: #FFF9EA;
+    padding: 10px;
+    border: 1px solid #F2B211;
+    border-radius: 8px;
+    gap: 10px;
+    display: flex;
+    flex-direction: column;
+}
+.alertText{
+    color: #242D3F;
+    font-size: 16px;
+}
+
+.certificateInput{
+    display: none;
+}
+.fileLabel{
+    cursor: pointer;
+    color: #328AEE;
+    font-size: 16px;
+    margin-top: 20px;
+    display: block;
+}
+.cropModal{
+    position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  flex-direction: column;
+  padding: 20px;
+  box-sizing: border-box;
+
+}
+
+.btnBlockCrop{
+    width: 360px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+}

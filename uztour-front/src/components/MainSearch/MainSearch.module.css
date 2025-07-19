@@ -116,3 +116,75 @@
 .calendarWrapper input{
     cursor: pointer;
 }
+.searchTop{
+    display: flex;
+    align-items: center;
+}
+
+@media (max-width:768px) {
+    .mainSearch{
+        flex-direction: column;
+        width: calc(100% - 20px);
+        background-color: transparent;
+        gap: 10px;
+    }
+    .selectDate{
+        border: none;
+        background-color: #fff;
+        height: 50px;
+        flex-shrink: 0;
+        border-radius: 8px;
+        flex: 1;
+        width: calc(50% - 5px);
+    }
+    .selectCity{
+        background-color: #fff;
+        height: 50px;
+        border-radius: 8px;
+        padding-left: 16px;
+        flex: 1;
+        width: calc(50% - 5px);
+    }
+    .selectExcursion{
+        background-color: #fff;
+        width: 350px;
+        height: 50px;
+        flex-shrink: 0;
+        border-radius: 8px;
+    }
+    .arrow{
+        position: absolute;
+        right: 20px;
+        top:0;
+        bottom:0;
+        margin-top: auto;
+        margin-bottom: auto;
+    }
+    .modal{
+        top: 53px;
+        width: 100%;
+        left: 0px;
+    }
+    .btn{
+        width: 350px;
+        height: 50px;
+        flex-shrink: 0;
+        border-radius: 8px;
+    }
+    .searchTop{
+        gap: 10px;
+        width: 350px;
+    }
+}
+
+@media (max-width:400px) {
+    .searchTop{
+        width: 320px;
+    }
+    .btn{
+        width: 320px;
+    }
+    .selectExcursion{
+        width: 320px;
+    }
+}

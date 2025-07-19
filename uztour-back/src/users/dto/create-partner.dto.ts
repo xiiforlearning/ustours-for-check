@@ -5,15 +5,15 @@ import { PartnerType } from '../entities/partner.entity';
 export class CreatePartnerDto {
   @ApiProperty()
   @IsEmail()
-  email: string;
+  email!: string;
 
   @ApiProperty()
   @IsPhoneNumber()
-  phone: string;
+  phone!: string;
 
   @ApiProperty({ enum: PartnerType })
   @IsEnum(PartnerType)
-  partnerType: PartnerType;
+  partnerType!: PartnerType;
 
   @ApiProperty({ required: false })
   @ValidateIf(o => o.partnerType === PartnerType.INDIVIDUAL)

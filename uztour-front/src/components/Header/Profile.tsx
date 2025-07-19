@@ -1,9 +1,9 @@
 "use client";
-import { UserType } from "@/types";
+import { Dict, UserType } from "@/types";
 import classes from "./Header.module.css";
 import { useEffect, useRef, useState } from "react";
 import useStore from "@/store/useStore";
-function Profile({ user }: { user: UserType }) {
+function Profile({ user, dict }: { user: UserType; dict: Dict }) {
   const setUser = useStore((state) => state.setUser);
   const [open, setOpen] = useState(false); // 1️⃣  menu‑open state
   const wrapperRef = useRef<HTMLDivElement>(null); // for outside‑click close
@@ -22,18 +22,21 @@ function Profile({ user }: { user: UserType }) {
     return () => document.removeEventListener("mousedown", handleOutside);
   }, []);
 
-  const logout = (e: MouseEvent) => {
+  const logout = (e: React.MouseEvent) => {
     e.preventDefault();
     localStorage.removeItem("user");
     setUser(null);
   };
 
+  const openModal = () => {
+    if (user && user.user.type == "partner") {
+      return;
+    }
+    setOpen((prev) => !prev);
+  };
+
   return (
-    <div
-      onClick={() => setOpen((prev) => !prev)}
-      ref={wrapperRef}
-      className={classes.avatar}
-    >
+    <div onClick={openModal} ref={wrapperRef} className={classes.avatar}>
       <p className={classes.avatarText}>
         {user.user.email[0] + "" + user.user.email[1]}
       </p>
@@ -52,7 +55,7 @@ function Profile({ user }: { user: UserType }) {
                 fill="#848484"
               />
             </svg>
-            <p className={classes.menuItemText}>Экскурсии</p>
+            <p className={classes.menuItemText}>{dict["yourTours"]}</p>
           </div>
           <div className={classes.menuItemBorder}>
             <svg
@@ -80,7 +83,7 @@ function Profile({ user }: { user: UserType }) {
               </defs>
             </svg>
 
-            <p className={classes.menuItemText}>Ваши трансферы</p>
+            <p className={classes.menuItemText}>{dict["header.transfer"]}</p>
           </div>
           <div onClick={logout} className={classes.menuItem}>
             <svg
@@ -106,7 +109,7 @@ function Profile({ user }: { user: UserType }) {
             </svg>
 
             <p style={{ color: "#EB5757" }} className={classes.menuItemText}>
-              Выйти
+              {dict["header.logout"]}
             </p>
           </div>
         </div>

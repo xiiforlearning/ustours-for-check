@@ -10,6 +10,9 @@ import { ToursModule } from './tours/tours.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { PaymentsModule } from './payments/payments.module';
 import { FilesModule } from './files/files.module';
+import { SchedulerModule } from './scheduler/scheduler.module';
+import { ScheduleModule } from '@nestjs/schedule';
+import { CurrencyModule } from './currency/currency.module';
 
 @Module({
   imports: [
@@ -41,7 +44,7 @@ import { FilesModule } from './files/files.module';
           password: configService.get('DB_PASSWORD'),
           database: configService.get('DB_NAME'),
           autoLoadEntities: true,
-          synchronize: configService.get('NODE_ENV') === 'development',
+          synchronize: true,
           logging: true,
           uuidExtension: 'pgcrypto',
         };
@@ -54,6 +57,9 @@ import { FilesModule } from './files/files.module';
     ReviewsModule,
     PaymentsModule,
     FilesModule,
+    SchedulerModule,
+    ScheduleModule.forRoot(),
+    CurrencyModule,
   ],
   controllers: [AppController],
   providers: [AppService],

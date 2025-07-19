@@ -1,7 +1,11 @@
+"use client";
 import Image from "next/image";
 import classes from "./Footer.module.css";
-function Footer() {
-  return (
+import { Dict } from "@/types";
+import useStore from "@/store/useStore";
+function Footer({ dict }: { dict: Dict }) {
+  const user = useStore((state) => state.user);
+  return (user && user.user.type !== "partner") || !user ? (
     <div className={classes.wrapper}>
       <div className={classes.container}>
         <div></div>
@@ -15,14 +19,20 @@ function Footer() {
               height={28}
             />
             <p className={classes.footerText}></p>
-            <p className={classes.footerText}>Публичная оферта</p>
-            <p className={classes.footerText}>Политика конфиденциальности</p>
+            <p className={classes.footerText}>
+              {dict["footer.privacy_policy"]}
+            </p>
+            <p className={classes.footerText}>{dict["footer.public_offer"]}</p>
           </div>
-          <div className={classes.footerContent}>
-            <p className={classes.footerText}>Экскурсии</p>
-            <p className={classes.footerText}>Заказать трансфер</p>
+
+          <div className={`${classes.footerContent} ${classes.secondColumn}`}>
+            <p className={classes.footerText}>{dict["footer.excursions"]}</p>
+            <p className={classes.footerText}>
+              {dict["footer.order_transfer"]}
+            </p>
             {/* <p className={classes.footerText}>Помощь</p> */}
           </div>
+
           <div className={classes.footerContent}>
             <div className={classes.social}>
               <div className={classes.socialItem}>
@@ -107,6 +117,8 @@ function Footer() {
         </div>
       </div>
     </div>
+  ) : (
+    <></>
   );
 }
 

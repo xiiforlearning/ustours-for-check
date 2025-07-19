@@ -6,7 +6,6 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors();
 
-  // Swagger setup
   const config = new DocumentBuilder()
     .setTitle('Tour Booking API')
     .setDescription('API documentation for the Tour Booking platform')
