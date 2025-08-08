@@ -4,7 +4,13 @@ import classes from "./MainSearch.module.css";
 import { Calendar as CalendarComp } from "primereact/calendar";
 import "primereact/resources/themes/lara-light-cyan/theme.css";
 import { useRef, useState } from "react";
-function Calendar({ dict }: { dict: Dict }) {
+function Calendar({
+  dict,
+  onChange,
+}: {
+  dict: Dict;
+  onChange?: (date: Date | null) => void;
+}) {
   const today = new Date();
   const tomorrow = new Date(today);
   const ref = useRef<CalendarComp | null>(null);
@@ -30,7 +36,10 @@ function Calendar({ dict }: { dict: Dict }) {
         <div ref={wrapper} className={classes.calendarWrapper}>
           <CalendarComp
             value={value}
-            onChange={(e) => e.value && setValue && setValue(e.value)}
+            onChange={(e) => {
+              e.value && setValue && setValue(e.value);
+              e.value && onChange && onChange(e.value);
+            }}
             minDate={tomorrow}
             ref={ref}
             style={{

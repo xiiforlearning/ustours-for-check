@@ -75,6 +75,10 @@ export interface TourType {
   duration: string;
   price: string;
   child_price: string;
+  whole_price: string; // Добавляем поле для цены за всю экскурсию
+  min_persons: string; // Добавляем поле для минимального количества человек
+  max_persons: string; // Добавляем поле для максимального количества человек
+  category?: string; // Добавляем поле для категории тура
   description: string;
   included: string[];
   excluded: string[];
@@ -105,6 +109,10 @@ export interface ResponseTour {
   difficulty: "easy" | "medium" | "hard";
   departure_city: string;
   departure_time: string;
+  departure_landmark: string;
+  departure_lat: number;
+  departure_lng: number;
+  departure_address: string;
   price: string;
   child_price: string;
   languages: string[];
@@ -123,6 +131,10 @@ export interface ResponseTour {
   description: string;
   rating?: number;
   rating_count?: number;
+  group_price: number;
+  max_persons: number;
+  min_persons: number;
+  category?: string;
   partner: {
     about: string;
     avatar: string;

@@ -3,29 +3,28 @@ import {
   Post,
   Get,
   Patch,
+  Delete,
   Param,
   Body,
   Query,
-  Req,
   UseGuards,
+  Req,
   BadRequestException,
-  Delete,
+  NotFoundException,
 } from '@nestjs/common';
+import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse, ApiBody, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { ToursService } from './tours.service';
 import { CreateTourDto } from './dto/create-tour.dto';
 import { TourFiltersDto } from './dto/tour-filters.dto';
-import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse, ApiBody, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { UsersService } from '../users/users.service';
-import { CurrencyService } from '../currency/currency.service';
 
 @ApiTags('Tours - Управление турами')
 @Controller('tours')
 export class ToursController {
   constructor(
     private readonly toursService: ToursService,
-    private readonly usersService: UsersService,
-    private readonly currencyService: CurrencyService,
+    private readonly usersService: UsersService
   ) {}
 
   @Post()
@@ -200,9 +199,48 @@ export class ToursController {
   async findAll(
     @Query() filters: TourFiltersDto,
     @Query('partner_id') partner_id?: string,
-    @Query('currency') currency?: string
+    @Query('currency') currency?: string,
+    @Req() req?: any
   ) {
-    return this.toursService.findAll(filters, partner_id, currency);
+    let finalPartnerId = partner_id;
+    
+    // Если есть авторизованный пользователь, проверяем является ли он партнёром
+    if (req?.user?.id) {
+      const partner = await this.usersService.findPartnerByUserId(req.user.id);
+      if (partner) {
+        // Партнёр всегда видит только свои туры, игнорируем переданный partner_id
+        finalPartnerId = partner.id;
+      }
+    }
+    
+    return this.toursService.findAll(filters, finalPartnerId, currency);
+  }
+
+  @Get('popular')
+  @ApiOperation({ 
+    summary: 'Получить популярные туры', 
+    description: 'Возвращает список популярных туров, отсортированный по количеству бронирований' 
+  })
+  @ApiQuery({ 
+    name: 'limit', 
+    required: false, 
+    type: Number,
+    description: 'Количество туров для возврата (по умолчанию 10)',
+    example: 10
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Список популярных туров получен успешно',
+    schema: {
+      example: [{
+        id: '881d9cbe-272b-4ad1-9c0b-e701870691b1',
+        title: 'Экскурсия по Самарканду',
+        bookingCount: 15
+      }]
+    }
+  })
+  async getPopularTours(@Query('limit') limit: number = 10) {
+    return this.toursService.getPopularTours(limit);
   }
 
   @Get(':id')
@@ -415,75 +453,52 @@ export class ToursController {
     await this.toursService.remove(id, userId);
   }
 
-  @Get('popular')
-  @ApiOperation({ 
-    summary: 'Получить популярные туры', 
-    description: 'Возвращает список самых популярных туров, отсортированных по количеству бронирований' 
-  })
-  @ApiQuery({ 
-    name: 'limit', 
-    required: false, 
-    type: Number,
-    description: 'Количество туров (по умолчанию 10)',
-    example: 5
-  })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Популярные туры получены успешно',
-    schema: {
-      example: [{
-        id: '881d9cbe-272b-4ad1-9c0b-e701870691b1',
-        title: 'Экскурсия по Самарканду',
-        status: 'active',
-        price: 150.00,
-        rating: 4.8,
-        bookingCount: 25,
-        partner: {
-          id: '4ecb3686-41e1-4686-9978-c499ea2ff965',
-          firstName: 'Test',
-          lastName: 'Partner'
-        }
-      }]
-    }
-  })
-  async getPopularTours(@Query('limit') limit: number = 10) {
-    return this.toursService.getPopularTours(limit);
-  }
-
-  @Get('cities')
-  @ApiOperation({ 
-    summary: 'Получить список городов', 
-    description: 'Возвращает список всех городов, где есть туры' 
-  })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Список городов получен успешно',
-    schema: {
-      example: ['Самарканд', 'Бухара', 'Ташкент', 'Хива']
-    }
-  })
-  async getCities() {
-    return this.toursService.getCities();
-  }
-
-  @Get('languages')
-  @ApiOperation({ 
-    summary: 'Получить список языков', 
-    description: 'Возвращает список всех языков, на которых проводятся туры' 
-  })
-  @ApiResponse({ 
-    status: 200, 
-    description: 'Список языков получен успешно',
-    schema: {
-      example: ['Русский', 'Английский', 'Узбекский', 'Немецкий']
-    }
-  })
-  async getLanguages() {
-    return this.toursService.getLanguages();
-  }
-
   @Get(':id/price')
   async getTourPrice(@Param('id') id: string, @Query('currency') currency: string = 'UZS') {
     return this.toursService.getTourPrice(id, currency);
+  }
+
+  @Post('cleanup-expired-dates')
+  @ApiOperation({ 
+    summary: 'Очистить прошедшие даты', 
+    description: 'Удаляет прошедшие даты из доступности всех туров. Этот endpoint можно вызывать по расписанию.' 
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Прошедшие даты успешно очищены'
+  })
+  async cleanupExpiredDates() {
+    await this.toursService.cleanupExpiredDates();
+    return { message: 'Expired dates cleaned up successfully' };
+  }
+
+  @Get(':id/availability/:date')
+  @ApiOperation({ 
+    summary: 'Проверить доступность тура на дату', 
+    description: 'Проверяет доступность тура на конкретную дату' 
+  })
+  @ApiParam({ 
+    name: 'id', 
+    type: 'string',
+    description: 'ID тура'
+  })
+  @ApiParam({ 
+    name: 'date', 
+    type: 'string',
+    description: 'Дата в формате YYYY-MM-DD'
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Информация о доступности получена',
+    schema: {
+      example: {
+        available: true,
+        availableSlots: 5,
+        totalSlots: 10
+      }
+    }
+  })
+  async checkAvailability(@Param('id') id: string, @Param('date') date: string) {
+    return this.toursService.checkTourAvailability(id, date);
   }
 }

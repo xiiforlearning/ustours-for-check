@@ -42,7 +42,7 @@ function LangBtn({ lang }: { lang: string }) {
     },
   ];
 
-  const cleanPath = pathname.replace(/^\/(ru|en|uz)/, "");
+  const cleanPath = pathname.replace(/^\/(ru|en|uz|cn)/, "");
 
   const currentLang = langs.find((l) => l.code === lang);
 

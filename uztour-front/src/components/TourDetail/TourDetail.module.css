@@ -85,6 +85,9 @@
     gap: 20px;
     margin-top: 80px;
 }
+.detailed{
+    flex: 2;
+}
 
 @media (max-width:1024px) {
     .title{
@@ -92,9 +95,16 @@
     }
     .mainInfo{
         flex-direction: column;
+        margin-top: 60px;
     }
     .additional{
         flex-direction: column-reverse;
         margin-top: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .mainInfo{
+        margin-top: 30px;
     }
 }

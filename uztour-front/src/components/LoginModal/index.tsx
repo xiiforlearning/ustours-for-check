@@ -223,7 +223,7 @@ function LoginModal({
     const child = searchParams.get("child");
     if (excursion_id && date && adult && child) {
       router.push(
-        "?excursion_id=" +
+        `/${lang}/booking/?excursion_id=` +
           excursion_id +
           "&date=" +
           date +

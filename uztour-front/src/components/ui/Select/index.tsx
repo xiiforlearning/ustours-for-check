@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
 import classes from "./Select.module.css";
+import { Dict } from "@/types";
 
 function Select({
   svg,
@@ -9,6 +10,7 @@ function Select({
   label,
   contain,
   white,
+  dict,
 }: {
   svg?: ReactNode;
   value: string;
@@ -17,7 +19,9 @@ function Select({
   label?: string;
   contain?: boolean;
   white?: boolean;
+  dict?: Dict;
 }) {
+  console.log(value);
   return (
     <div
       style={contain ? { width: "fit-content" } : {}}
@@ -57,7 +61,10 @@ function Select({
         >
           {options.map((option) => (
             <option key={option} value={option}>
-              {option}
+              {
+                //@ts-expect-error aaa
+                dict ? dict[option] : option
+              }
             </option>
           ))}
         </select>

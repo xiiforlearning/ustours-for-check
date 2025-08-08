@@ -1,16 +1,24 @@
 "use client";
-import useTours from "@/hooks/useTours";
 import classes from "./tours.module.css";
 import Link from "next/link";
 import Filter from "../Filter";
 import ExcursionList from "../ExcursionList";
-import { Dict } from "@/types";
+import { Dict, ResponseTour } from "@/types";
 import { Locale } from "@/i18n-config";
 
-function Tours({ dict, lang }: { dict: Dict; lang: Locale }) {
-  const { currentPage, currentItems, handlePageChange, totalPages } =
-    useTours();
-
+function Tours({
+  dict,
+  lang,
+  res,
+  page,
+  searchParams,
+}: {
+  dict: Dict;
+  lang: Locale;
+  res: { tours: ResponseTour[]; total: number; totalPages: number };
+  page: number;
+  searchParams: { [key: string]: string };
+}) {
   return (
     <div>
       <div className={classes.container}>
@@ -34,7 +42,9 @@ function Tours({ dict, lang }: { dict: Dict; lang: Locale }) {
             <p className={classes.headerTitle}>{dict["header.excursions"]}</p>
           </div>
           <p className={classes.title}>{dict["allExcursions"]}</p>
-          <p className={classes.count}>809 {dict["offers"]}</p>
+          <p className={classes.count}>
+            {res.total} {dict["offers"]}
+          </p>
           <Filter dict={dict} />
         </div>
       </div>
@@ -42,12 +52,12 @@ function Tours({ dict, lang }: { dict: Dict; lang: Locale }) {
       <ExcursionList
         isPagination
         title={dict["popularExcursions"]}
-        data={currentItems}
+        data={res.tours}
         dict={dict}
         lang={lang}
-        currentPage={currentPage}
-        setCurrentPage={handlePageChange}
-        totalPages={totalPages}
+        currentPage={page}
+        totalPages={res.totalPages}
+        searchParams={searchParams}
       />
     </div>
   );

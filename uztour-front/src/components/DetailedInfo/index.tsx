@@ -19,7 +19,7 @@ function Detailed({
           dict={dict}
           index={index}
           lang={lang}
-          key={item.title}
+          key={index}
           {...item}
         />
       ))}

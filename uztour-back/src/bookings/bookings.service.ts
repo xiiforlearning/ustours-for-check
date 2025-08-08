@@ -5,11 +5,14 @@ import { Booking } from './entities/booking.entity';
 import { CreateBookingDto, BookingStatus } from './dto/create-booking.dto';
 import { UpdateBookingDto } from './dto/update-booking.dto';
 import { ToursService } from '../tours/tours.service';
+import { TourType } from '../tours/dto/create-tour.dto';
 import { UsersService } from '../users/users.service';
 import { SchedulerService } from '../scheduler/scheduler.service';
 import { User } from '../users/entities/user.entity';
 import { Payment, PaymentStatus, Currency, PaymentMethod } from '../payments/entities/payment.entity';
 import { OctoService } from '../payments/services/octo.service';
+import { TelegramService } from '../telegram/telegram.service';
+import * as moment from 'moment-timezone';
 
 @Injectable()
 export class BookingsService {
@@ -24,6 +27,7 @@ export class BookingsService {
     private readonly usersService: UsersService,
     private readonly schedulerService: SchedulerService,
     private readonly octoService: OctoService,
+    private readonly telegramService: TelegramService,
   ) {}
 
   async create(createBookingDto: CreateBookingDto, userId: string): Promise<{ booking: Booking; payment: Payment | null; paymentUrl: string | null }> {
@@ -45,36 +49,80 @@ export class BookingsService {
       throw new BadRequestException('Customer profile not found for this user');
     }
 
-    // Check availability - this will throw specific error messages if validation fails
-    await this.checkAvailability(createBookingDto.tourId, createBookingDto.tourDate, createBookingDto.adultsCount + (createBookingDto.childrenCount || 0));
+    // Гарантируем, что дата — строка
+    const tourDateStr = typeof createBookingDto.tourDate === 'string'
+      ? createBookingDto.tourDate
+      : createBookingDto.tourDate instanceof Date
+        ? createBookingDto.tourDate.toISOString().split('T')[0]
+        : String(createBookingDto.tourDate);
 
-    const totalPeople = createBookingDto.adultsCount + (createBookingDto.childrenCount || 0) + (createBookingDto.infantsCount || 0);
-    const adultPrice = tour.price || 0;
-    const childPrice = tour.child_price || 0;
-    const totalPrice = (createBookingDto.adultsCount * adultPrice) + ((createBookingDto.childrenCount || 0) * childPrice);
+    // Check availability - this will throw specific error messages if validation fails
+    await this.checkAvailability(createBookingDto.tourId, tourDateStr, createBookingDto.adultsCount + (createBookingDto.childrenCount || 0));
+
+    const totalPeople = createBookingDto.adultsCount + (createBookingDto.childrenCount || 0);
+    
+    // Определяем цену в зависимости от типа бронирования
+    const isGroupBooking = createBookingDto.isGroup || false;
+    let totalPrice: number;
+    
+    // Логика расчета цены:
+    // 1. PRIVATE туры - всегда используют group_price (если есть), иначе price per person
+    // 2. GROUP туры с isGroup=true - используют group_price (фиксированная цена за "выкуп" всего тура)
+    // 3. GROUP туры с isGroup=false - используют price per person
+    const shouldUseGroupPrice = (tour.type === TourType.PRIVATE || isGroupBooking) && 
+                               tour.group_price !== null && tour.group_price !== undefined;
+    
+    if (shouldUseGroupPrice) {
+      // Фиксированная цена за весь тур/день
+      totalPrice = tour.group_price || 0;
+    } else {
+      // Расчет per person
+      const adultPrice = tour.price || 0;
+      const childPrice = tour.child_price || 0;
+      totalPrice = (createBookingDto.adultsCount * adultPrice) + ((createBookingDto.childrenCount || 0) * childPrice);
+    }
+    
+    // Для записи в БД определяем adult_price (для совместимости)
+    const adultPriceForDB = shouldUseGroupPrice
+      ? (tour.group_price || 0) // При групповом бронировании записываем group_price с fallback
+      : (tour.price || 0);
+
+    // Преобразуем дату из формата DD.MM.YYYY в YYYY-MM-DD, если нужно
+    let normalizedTourDate = tourDateStr;
+    if (/^\d{2}\.\d{2}\.\d{4}$/.test(tourDateStr)) {
+      const [day, month, year] = tourDateStr.split('.');
+      normalizedTourDate = `${year}-${month}-${day}`;
+    }
 
     const booking = this.bookingRepository.create({
       customer_id: user.customer.id,
       tour_id: createBookingDto.tourId,
-      tour_date: new Date(createBookingDto.tourDate),
+      tour_date: normalizedTourDate, // всегда ISO-строка
       adults_count: createBookingDto.adultsCount,
       children_count: createBookingDto.childrenCount || 0,
-      infants_count: createBookingDto.infantsCount || 0,
+      isGroup: createBookingDto.isGroup || false,
       total_price: totalPrice,
-      adult_price: adultPrice,
-      child_price: childPrice,
+      adult_price: adultPriceForDB,
+      child_price: tour.child_price || 0,
       special_requirements: createBookingDto.specialRequirements,
       contact_fullname: createBookingDto.contactFullname,
       whatsapp: createBookingDto.whatsapp,
       telegram: createBookingDto.telegram,
       contact_phone: createBookingDto.contactPhone,
       contact_email: createBookingDto.contactEmail,
-      status: BookingStatus.PENDING,
+      status: BookingStatus.CONFIRMED, // сразу подтверждаем
+      confirmed_at: new Date(), // ставим дату подтверждения
+      currency_code: (createBookingDto.currencyCode && typeof createBookingDto.currencyCode === 'string')
+        ? createBookingDto.currencyCode
+        : (tour.currency || 'UZS'),
+      currency_rate: (typeof createBookingDto.currencyRate === 'number')
+        ? createBookingDto.currencyRate
+        : 1,
     });
 
     const savedBooking = await this.bookingRepository.save(booking);
 
-    await this.updateTourAvailability(createBookingDto.tourId, createBookingDto.tourDate, totalPeople, tour.partner_id);
+    await this.updateTourAvailability(createBookingDto.tourId, tourDateStr, totalPeople, tour.partner_id, createBookingDto.isGroup || false);
 
     // --- Отключаем создание платежа и генерацию paymentUrl ---
     /*
@@ -152,16 +200,32 @@ export class BookingsService {
     */
     // --- Конец отключения оплаты ---
 
-    // Try to schedule expiration, but don't fail if Redis is not available
+    // Таймер автоматической отмены бронирования отключён:
+    // try {
+    //   await this.schedulerService.scheduleBookingExpiration(savedBooking.id);
+    // } catch (error) {
+    //   if (error instanceof Error) {
+    //     console.warn('Failed to schedule booking expiration:', error.message);
+    //   } else {
+    //     console.warn('Failed to schedule booking expiration:', String(error));
+    //   }
+    //   // Continue without scheduling - booking is still valid
+    // }
+
+    // Отправляем уведомление в Telegram
     try {
-      await this.schedulerService.scheduleBookingExpiration(savedBooking.id);
-    } catch (error) {
-      if (error instanceof Error) {
-        console.warn('Failed to schedule booking expiration:', error.message);
-      } else {
-        console.warn('Failed to schedule booking expiration:', String(error));
+      // Получаем полное бронирование с tour для отправки в Telegram
+      const bookingWithTour = await this.bookingRepository.findOne({
+        where: { id: savedBooking.id },
+        relations: ['tour']
+      });
+      
+      if (bookingWithTour) {
+        await this.telegramService.sendBookingNotification(bookingWithTour);
       }
-      // Continue without scheduling - booking is still valid
+    } catch (error) {
+      // Логируем ошибку, но не прерываем создание бронирования
+      console.warn('Failed to send Telegram notification:', error);
     }
 
     return { 
@@ -172,6 +236,8 @@ export class BookingsService {
   }
 
   async findAll(userId?: string, partnerId?: string): Promise<Booking[]> {
+    console.log('BookingsService.findAll called with userId:', userId, 'partnerId:', partnerId);
+    
     const queryBuilder = this.bookingRepository
       .createQueryBuilder('booking')
       .leftJoinAndSelect('booking.customer', 'customer')
@@ -180,14 +246,19 @@ export class BookingsService {
       .leftJoinAndSelect('tour.partner', 'partner');
 
     if (userId) {
+      console.log('Adding userId filter:', userId);
       queryBuilder.andWhere('user.id = :userId', { userId });
     }
 
     if (partnerId) {
+      console.log('Adding partnerId filter:', partnerId);
       queryBuilder.andWhere('tour.partner_id = :partnerId', { partnerId });
     }
 
-    return queryBuilder.orderBy('booking.created_at', 'DESC').getMany();
+    const result = await queryBuilder.orderBy('booking.created_at', 'DESC').getMany();
+    console.log('Found bookings count:', result.length);
+    
+    return result;
   }
 
   async findOne(id: string, userId?: string, partnerId?: string): Promise<Booking> {
@@ -332,7 +403,23 @@ export class BookingsService {
       throw new BadRequestException(`Тур "${tour.title}" не имеет данных о доступности. Обратитесь к организатору тура.`);
     }
 
-    const availabilityItem = tour.availability.find(item => item.date === date);
+    // Нормализуем дату бронирования к ISO формату
+    let normalizedDate = date;
+    if (/^\d{2}\.\d{2}\.\d{4}$/.test(date)) {
+      const [day, month, year] = date.split('.');
+      normalizedDate = `${year}-${month}-${day}`;
+    }
+
+    // Ищем availability item с учетом нормализации дат
+    const availabilityItem = tour.availability.find(item => {
+      let itemNormalizedDate = item.date;
+      if (/^\d{2}\.\d{2}\.\d{4}$/.test(item.date)) {
+        const [day, month, year] = item.date.split('.');
+        itemNormalizedDate = `${year}-${month}-${day}`;
+      }
+      return itemNormalizedDate === normalizedDate;
+    });
+
     if (!availabilityItem) {
       const availableDates = tour.availability.map(item => item.date).join(', ');
       throw new BadRequestException(`Дата ${date} недоступна для тура "${tour.title}". Доступные даты: ${availableDates || 'нет данных'}`);
@@ -343,23 +430,67 @@ export class BookingsService {
     }
   }
 
-  private async updateTourAvailability(tourId: string, date: string, peopleCount: number, partnerId: string): Promise<void> {
+  private async updateTourAvailability(tourId: string, date: string, peopleCount: number, partnerId: string, isGroup: boolean): Promise<void> {
+    console.log('updateTourAvailability called with:', { tourId, date, peopleCount, partnerId, isGroup });
+    
     const tour = await this.toursService.findOne(tourId);
     if (!tour || !tour.availability) {
+      console.log('Tour not found or no availability:', { tour: !!tour, availability: !!tour?.availability });
       return;
     }
 
+    console.log('Tour details:', { id: tour.id, type: tour.type, availability: tour.availability });
+
+    // Нормализуем дату к формату ISO (YYYY-MM-DD)
+    let normalizedDate = date;
+    if (/^\d{2}\.\d{2}\.\d{4}$/.test(date)) {
+      const [day, month, year] = date.split('.');
+      normalizedDate = `${year}-${month}-${day}`;
+    }
+    
+    console.log('Date normalized from', date, 'to', normalizedDate);
+
     const updatedAvailability = tour.availability.map(item => {
-      if (item.date === date) {
+      // Нормализуем дату из item тоже для правильного сравнения
+      let itemNormalizedDate = item.date;
+      if (/^\d{2}\.\d{2}\.\d{4}$/.test(item.date)) {
+        const [day, month, year] = item.date.split('.');
+        itemNormalizedDate = `${year}-${month}-${day}`;
+      }
+      
+      if (itemNormalizedDate === normalizedDate) {
+        // Определяем нужно ли закрыть все слоты на день:
+        // 1. PRIVATE туры - всегда закрывают весь день (индивидуальная экскурсия)
+        // 2. GROUP туры с isGroup=true - "выкуп" всего тура на день (корпоративы, большие группы)
+        // 3. GROUP туры с isGroup=false - обычное присоединение к группе (уменьшаем слоты на количество людей)
+        const shouldCloseAllSlots = tour.type === TourType.PRIVATE || (tour.type === TourType.GROUP && isGroup);
+        
+        console.log('Processing availability item:', {
+          originalItemDate: item.date,
+          itemNormalizedDate,
+          normalizedBookingDate: normalizedDate,
+          tourType: tour.type,
+          isGroup,
+          shouldCloseAllSlots,
+          currentSlots: item.available_slots,
+          peopleCount
+        });
+        
+        const newAvailableSlots = shouldCloseAllSlots ? 0 : Math.max(0, item.available_slots - peopleCount);
+        
+        console.log('Updating slots from', item.available_slots, 'to', newAvailableSlots);
+        
         return {
           ...item,
-          available_slots: Math.max(0, item.available_slots - peopleCount)
+          available_slots: newAvailableSlots
         };
       }
       return item;
     });
 
+    console.log('Updated availability:', updatedAvailability);
     await this.toursService.updateAvailabilityByPartnerId(tourId, updatedAvailability, partnerId);
+    console.log('Availability updated successfully');
   }
 
   private async returnTourAvailability(tourId: string, date: Date, peopleCount: number, partnerId: string): Promise<void> {

@@ -158,3 +158,23 @@
     gap: 10px;
     margin-top: 20px;
 }
+.myTours{
+    display: none;
+}
+
+@media (max-width:730px) {
+    .info{
+        flex-direction: column;
+        align-items: center;
+    }
+    .myTours{
+        display: block;
+    }
+}
+
+@media (max-width:573px) {
+   .infoItem{
+        gap: 10px;
+        flex-direction: column;
+   }
+}

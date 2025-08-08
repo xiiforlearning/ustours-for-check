@@ -1,9 +1,9 @@
 "use client";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import classes from "./FilterTransfer.module.css";
 import Select from "../ui/Select";
-import TextField from "../ui/TextField";
+// import TextField from "../ui/TextField";
 import Calendar from "../ui/Calendar";
 import { Dict } from "@/types";
 import AutocompleteInput from "../AutoComplateInput";
@@ -13,6 +13,7 @@ function FilterTransfer({ dict }: { dict: Dict }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [type, setType] = useState<"departure" | "arrival">("arrival");
+  const inputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState<{
     departure: string;
     arrival: string;
@@ -31,7 +32,7 @@ function FilterTransfer({ dict }: { dict: Dict }) {
     const initialDeparture = searchParams.get("departure") || "";
     const initialDate = searchParams.get("date") || null;
     const initialTime = searchParams.get("time") || null;
-
+    console.log("Initial Departure:", initialDeparture);
     setFormData({
       departure: initialDeparture,
       arrival: airaports[1].label,
@@ -42,7 +43,7 @@ function FilterTransfer({ dict }: { dict: Dict }) {
       city: null,
       airaportCity: null,
     });
-  }, []);
+  }, [searchParams]);
 
   const airaports = [
     { label: dict["selectAirport"], value: dict["selectAirport"] },
@@ -55,6 +56,7 @@ function FilterTransfer({ dict }: { dict: Dict }) {
   const handelAddressChange = async (value: string) => {
     if (!value) {
       setFormData({ ...formData, city: "", departure: "" });
+      updateQueryParams({ departure: "" });
       return;
     }
 
@@ -102,8 +104,13 @@ function FilterTransfer({ dict }: { dict: Dict }) {
       setFormData({ ...formData, departure: "" });
       return;
     }
-    updateQueryParams({ departure: place.formatted_address });
-    setFormData({ ...formData, departure: place.formatted_address, city });
+
+    updateQueryParams({ departure: inputRef.current?.value || "" });
+    setFormData({
+      ...formData,
+      departure: inputRef.current?.value || "",
+      city,
+    });
   };
 
   const changeAirport = () => {};
@@ -208,6 +215,7 @@ function FilterTransfer({ dict }: { dict: Dict }) {
             <div className={classes.carContainer} style={{ flex: 1 }}>
               <AutocompleteInput
                 value={formData.departure}
+                inputRef={inputRef}
                 setValue={handelAddressChange}
                 onPlaceSelected={onPlaceSelected}
                 svg={
@@ -235,9 +243,11 @@ function FilterTransfer({ dict }: { dict: Dict }) {
         {type == "departure" && (
           <>
             <div className={classes.carContainer} style={{ flex: 1 }}>
-              <TextField
+              <AutocompleteInput
                 value={formData.departure}
                 setValue={handelAddressChange}
+                inputRef={inputRef}
+                onPlaceSelected={onPlaceSelected}
                 svg={
                   <svg
                     width="21"

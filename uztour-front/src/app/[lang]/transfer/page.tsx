@@ -10,9 +10,15 @@ export async function generateStaticParams() {
   return i18n.locales.map((locale) => ({ lang: locale }));
 }
 
-async function Page(props: { params: Promise<{ lang: Locale }> }) {
+async function Page(props: {
+  params: Promise<{ lang: Locale }>;
+  searchParams?: Promise<{ [key: string]: string }>;
+}) {
   const params = await props.params;
   const dict = await getDictionary(params.lang);
+  const searchParams = await props.searchParams;
+  const { departure, date, time } = searchParams || {};
+
   return (
     <div className={classes.wrapper}>
       <div className={classes.container}>
@@ -38,7 +44,9 @@ async function Page(props: { params: Promise<{ lang: Locale }> }) {
         <p className={classes.desc}>{dict["transfer.description"]}</p>
         <Suspense>
           <FilterTransfer dict={dict} />
-          <TransportList lang={params.lang} dict={dict} />
+          {departure && date && time && (
+            <TransportList lang={params.lang} dict={dict} />
+          )}
         </Suspense>
       </div>
     </div>

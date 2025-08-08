@@ -94,7 +94,7 @@
     border-bottom-left-radius: 12px;
     border-bottom-right-radius: 12px;
     padding: 15px;
-    height: 216px;
+    height: 200px;
 }
 
 .name{
@@ -112,8 +112,8 @@
 
 .features{
     display: flex;
-    flex-direction: column;
     gap: 8px;
+    flex-wrap: wrap;
 }
 .feature{
     display: flex;
@@ -121,7 +121,7 @@
     border-radius: 8px;
     width: fit-content;
     gap: 3.5px;
-    padding: 8px 6px;
+    padding: 10px 12px;
     align-items: center;
 }
 .featureText{

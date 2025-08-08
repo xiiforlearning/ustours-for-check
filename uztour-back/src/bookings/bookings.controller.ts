@@ -16,11 +16,12 @@ import { CreateBookingDto } from './dto/create-booking.dto';
 import { UpdateBookingDto } from './dto/update-booking.dto';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiResponse, ApiBody, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { UsersService } from '../users/users.service';
 
 @ApiTags('Bookings - Управление бронированиями')
 @Controller('bookings')
 export class BookingsController {
-  constructor(private readonly bookingsService: BookingsService) {}
+  constructor(private readonly bookingsService: BookingsService, private readonly usersService: UsersService) {}
 
   @Post()
   @UseGuards(JwtAuthGuard)
@@ -40,7 +41,6 @@ export class BookingsController {
           tourDate: '2024-07-15',
           adultsCount: 2,
           childrenCount: 0,
-          infantsCount: 0,
           specialRequirements: 'Нужен детский стул',
           contactPhone: '+998901234567',
           contactEmail: 'user@example.com',
@@ -56,7 +56,6 @@ export class BookingsController {
           tourDate: '2024-07-20',
           adultsCount: 2,
           childrenCount: 2,
-          infantsCount: 1,
           specialRequirements: 'Нужны детские стулья и коляска',
           contactPhone: '+998901234567',
           contactEmail: 'family@example.com',
@@ -132,7 +131,7 @@ export class BookingsController {
     }
   })
   async create(@Req() req, @Body() createBookingDto: CreateBookingDto) {
-    const userId = req.user.sub || req.user.id;
+    const userId = req.user.id;
     if (!userId) {
       throw new BadRequestException('User ID not found in JWT');
     }
@@ -195,12 +194,25 @@ export class BookingsController {
     description: 'Не авторизован' 
   })
   async findAll(@Req() req) {
-    const userId = req.user.sub || req.user.id;
-    const partnerId = req.user.partnerId || req.user.partner_id;
+    const userId = req.user.id;
+    const userType = req.user.type;
     
-    if (partnerId) {
-      return this.bookingsService.findAll(undefined, partnerId);
+    console.log('BookingsController.findAll - userId:', userId, 'userType:', userType);
+    
+    if (userType === 'partner') {
+      // Для партнёра получаем его ID из базы данных
+      const partner = await this.usersService.findPartnerByUserId(userId);
+      console.log('Found partner:', partner?.id);
+      if (partner) {
+        console.log('Calling findAll with partnerId:', partner.id);
+        return this.bookingsService.findAll(undefined, partner.id);
+      } else {
+        console.log('Partner not found for userId:', userId);
+      }
     }
+    
+    // Для customer (или если партнёр не найден) получаем только его бронирования
+    console.log('Calling findAll with userId:', userId);
     return this.bookingsService.findAll(userId);
   }
 
@@ -279,12 +291,18 @@ export class BookingsController {
     }
   })
   async findOne(@Req() req, @Param('id') id: string) {
-    const userId = req.user.sub || req.user.id;
-    const partnerId = req.user.partnerId || req.user.partner_id;
+    const userId = req.user.id;
+    const userType = req.user.type;
     
-    if (partnerId) {
-      return this.bookingsService.findOne(id, undefined, partnerId);
+    if (userType === 'partner') {
+      // Для партнёра получаем его ID из базы данных
+      const partner = await this.usersService.findPartnerByUserId(userId);
+      if (partner) {
+        return this.bookingsService.findOne(id, undefined, partner.id);
+      }
     }
+    
+    // Для customer (или если партнёр не найден) получаем только его бронирование
     return this.bookingsService.findOne(id, userId);
   }
 
@@ -360,11 +378,20 @@ export class BookingsController {
     description: 'Бронирование с указанным ID не найдено' 
   })
   async update(@Req() req, @Param('id') id: string, @Body() updateBookingDto: UpdateBookingDto) {
-    const partnerId = req.user.partnerId || req.user.partner_id;
-    if (!partnerId) {
+    const userId = req.user.id;
+    const userType = req.user.type;
+    
+    if (userType !== 'partner') {
       throw new BadRequestException('Only partners can update booking status');
     }
-    return this.bookingsService.update(id, updateBookingDto, partnerId);
+    
+    // Для партнёра получаем его ID из базы данных
+    const partner = await this.usersService.findPartnerByUserId(userId);
+    if (!partner) {
+      throw new BadRequestException('Partner not found');
+    }
+    
+    return this.bookingsService.update(id, updateBookingDto, partner.id);
   }
 
   @Post(':id/cancel')
@@ -431,7 +458,7 @@ export class BookingsController {
     description: 'Бронирование с указанным ID не найдено' 
   })
   async cancel(@Req() req, @Param('id') id: string, @Body() body: { reason?: string }) {
-    const userId = req.user.sub || req.user.id;
+    const userId = req.user.id;
     if (!userId) {
       throw new BadRequestException('User ID not found in JWT');
     }

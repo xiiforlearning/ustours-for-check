@@ -1,20 +1,57 @@
 import Link from "next/link";
-import Calendar from "./Calendar";
 import classes from "./MainSearch.module.css";
 import Select from "./Select";
 import TypeExcursion from "./TypeExcursion";
 import { Dict } from "@/types";
+import { useState } from "react";
+import { cities, langs } from "@/consts";
 
 function MainSearch({ dict }: { dict: Dict }) {
+  const [selectedCity, setSelectedCity] = useState<string>("");
+  const [selectedLang, setSelectedLang] = useState<string>("");
+  const [selectedType, setSelectedType] = useState<string>("");
+
   return (
     <div className={classes.mainSearch}>
       <div className={classes.searchTop}>
-        <Select dict={dict} />
-        <Calendar dict={dict} />
+        <Select
+          placeHolder={"city"}
+          data={cities}
+          onChange={setSelectedCity}
+          dict={dict}
+        />
+        <Select
+          placeHolder="lang"
+          data={langs}
+          svg={
+            <svg
+              width="15"
+              height="13"
+              viewBox="0 0 15 13"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M8.52486 8.6657L6.90128 7.13617L6.92045 7.11789C8.03267 5.9357 8.82528 4.5768 9.2919 3.13867H11.1648V1.91992H6.69034V0.701172H5.41193V1.91992H0.9375V3.13867H8.07741C7.64915 4.30867 6.97159 5.42383 6.05114 6.39883C5.45668 5.77117 4.96449 5.08258 4.57457 4.35742H3.29616C3.76278 5.3507 4.40199 6.28914 5.20099 7.13617L1.94744 10.1952L2.85511 11.0605L6.05114 8.01367L8.03906 9.90883L8.52486 8.6657ZM12.1236 5.57617H10.8452L7.96875 12.8887H9.24716L9.96307 11.0605H12.9993L13.7216 12.8887H15L12.1236 5.57617ZM10.4489 9.8418L11.4844 7.2032L12.5199 9.8418H10.4489Z"
+                fill="#848484"
+              ></path>
+            </svg>
+          }
+          onChange={setSelectedLang}
+          dict={dict}
+        />
       </div>
 
-      <TypeExcursion dict={dict} />
-      <Link href={"/tours"} className={classes.btn}>
+      <TypeExcursion onChange={setSelectedType} dict={dict} />
+      <Link
+        href={
+          "/tours?page=1" +
+          (selectedCity ? "&city=" + selectedCity : "") +
+          (selectedLang ? "&languages=" + selectedLang : "") +
+          (selectedType ? "&type=" + selectedType : "")
+        }
+        className={classes.btn}
+      >
         <svg
           width="16"
           height="16"

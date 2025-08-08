@@ -37,5 +37,7 @@ export function middleware(request: NextRequest) {
   }
 }
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|images|fonts|favicon.ico).*)"],
+  matcher: [
+    "/((?!api|_next/static|_next/image|images|agreement.docx|fonts|html|privacy.docx|xml|google41b65f1e09d19889.html|yandex_a65a05e8b759f736.html|sitemap1.xml|pdf|favicon.ico).*)",
+  ],
 };

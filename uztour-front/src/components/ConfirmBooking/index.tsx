@@ -69,7 +69,12 @@ function ConfirmBooking({
           <p className={classes.text}>{dict.fillContactDetails}</p>
           <TextField
             placeHolder=""
-            label={dict.name}
+            label={
+              <>
+                {dict.name}
+                <span>*</span>
+              </>
+            }
             value={formData.name}
             setValue={(value: string) =>
               setFormData({ ...formData, name: value })
@@ -78,7 +83,12 @@ function ConfirmBooking({
           <div style={{ height: 16 }} />
           <TextField
             placeHolder=""
-            label="Email*"
+            label={
+              <>
+                {"Email"}
+                <span>*</span>
+              </>
+            }
             value={formData.email}
             setValue={(value: string) =>
               setFormData({ ...formData, email: value })

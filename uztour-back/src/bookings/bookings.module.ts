@@ -9,6 +9,7 @@ import { ToursModule } from '../tours/tours.module';
 import { UsersModule } from '../users/users.module';
 import { SchedulerModule } from '../scheduler/scheduler.module';
 import { PaymentsModule } from '../payments/payments.module';
+import { TelegramModule } from '../telegram/telegram.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { PaymentsModule } from '../payments/payments.module';
     UsersModule, 
     forwardRef(() => SchedulerModule),
     PaymentsModule,
+    TelegramModule,
   ],
   controllers: [BookingsController],
   providers: [BookingsService],

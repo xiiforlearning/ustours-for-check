@@ -4,28 +4,44 @@ import classes from "./ExcursionList.module.css";
 import { Pagination } from "@mui/material";
 import Link from "next/link";
 import { Locale } from "@/i18n-config";
+import { useRouter } from "next/navigation";
 
 function ExcursionList({
   title,
   data,
   isPagination,
   currentPage,
-  setCurrentPage,
   totalPages,
   dict,
   lang,
+  searchParams,
 }: {
   title: string;
   data: ResponseTour[];
   isPagination?: boolean;
   currentPage?: number;
-  setCurrentPage?: (page: number) => void;
   totalPages?: number;
   dict: Dict;
   lang: Locale;
+  searchParams: { [key: string]: string };
 }) {
+  const router = useRouter();
   const onChange = (_: any, page: number) => {
-    page && setCurrentPage && setCurrentPage(page);
+    // Create a new URLSearchParams object
+    const params = new URLSearchParams();
+
+    // Safely copy existing searchParams (all values are strings)
+    Object.entries(searchParams).forEach(([key, value]) => {
+      params.set(key, value);
+    });
+
+    // Update the page parameter
+    params.set("page", page.toString());
+
+    const newUrl = `/${lang}/tours?${params.toString()}`;
+
+    // Navigate without scrolling
+    router.push(newUrl, { scroll: false });
   };
 
   return (
@@ -86,6 +102,27 @@ function ExcursionList({
                   )}
                   <h1 className={classes.name}>{excursion.title}</h1>
                   <div className={classes.features}>
+                    <div className={classes.feature}>
+                      <svg
+                        width="15"
+                        height="16"
+                        viewBox="0 0 15 16"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M7.49902 2.01172C4.06152 2.01172 1.24902 4.82422 1.24902 8.26172C1.24902 11.6992 4.06152 14.5117 7.49902 14.5117C10.9365 14.5117 13.749 11.6992 13.749 8.26172C13.749 4.82422 10.9365 2.01172 7.49902 2.01172ZM10.1865 10.2617L6.87402 8.44922V5.13672H7.81152V7.88672L10.624 9.44922L10.1865 10.2617Z"
+                          fill="#848484"
+                        />
+                      </svg>
+
+                      <p className={classes.featureText}>
+                        {excursion.duration}{" "}
+                        {excursion.duration_unit == "days"
+                          ? dict.day3
+                          : dict.hour2}
+                      </p>
+                    </div>
                     <div className={classes.feature}>
                       <svg
                         width="15"

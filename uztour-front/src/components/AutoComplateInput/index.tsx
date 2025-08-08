@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { RefObject, useEffect, useRef } from "react";
 import TextField from "../ui/TextField";
 
 interface AutocompleteInputProps {
@@ -8,6 +8,7 @@ interface AutocompleteInputProps {
   placeHolder: string;
   label?: string;
   svg?: React.ReactNode;
+  inputRef: RefObject<HTMLInputElement | null>;
 }
 
 const AutocompleteInput: React.FC<AutocompleteInputProps> = ({
@@ -17,8 +18,8 @@ const AutocompleteInput: React.FC<AutocompleteInputProps> = ({
   placeHolder,
   label,
   svg,
+  inputRef,
 }) => {
-  const inputRef = useRef<HTMLInputElement>(null);
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
 
   useEffect(() => {

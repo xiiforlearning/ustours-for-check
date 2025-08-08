@@ -59,18 +59,6 @@ function DayProgram({
       <div>
         <div className={classes.day}>{index + 1} День</div>
         <TextField
-          value={program.name}
-          placeHolder="Название программы"
-          setValue={(value) => {
-            setPrograms((programs) => {
-              const newPrograms = [...programs];
-              newPrograms[index].name = value;
-              return newPrograms;
-            });
-          }}
-        />
-        <div style={{ height: 20 }} />
-        <TextField
           value={program.description}
           placeHolder="Описание дня"
           multiline

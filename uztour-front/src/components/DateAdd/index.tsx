@@ -13,11 +13,13 @@ function DateAdd({
   days,
   setDays,
   duration,
+  onChangeDate,
 }: {
-  days: { quantity: string; dateRange?: DateRange }[];
+  days: { quantity: string; dateRange?: DateRange; avilable_slots?: number }[];
   setDays: React.Dispatch<
     React.SetStateAction<{ quantity: string; dateRange?: DateRange }[]>
   >;
+  onChangeDate?: (dateRange: DateRange, quantity: number) => void;
   duration: number;
 }) {
   const [newData, setNewData] = useState<{
@@ -59,6 +61,30 @@ function DateAdd({
           alert("Дата не может быть раньше сегодняшнего дня");
           return;
         }
+
+        // Проверка на дублирование дат
+        const isDuplicate = days.some((day, index) => {
+          if (editingIndex.current === index) return false; // Исключаем текущий редактируемый элемент
+          if (!day.dateRange?.from || !day.dateRange?.to) return false;
+          if (!newData.dateRange?.from || !newData.dateRange?.to) return false;
+
+          const existingFrom = new Date(day.dateRange.from);
+          const existingTo = new Date(day.dateRange.to);
+          const newFrom = new Date(newData.dateRange.from);
+          const newTo = new Date(newData.dateRange.to);
+
+          // Проверяем, совпадают ли даты
+          return (
+            existingFrom.getTime() === newFrom.getTime() &&
+            existingTo.getTime() === newTo.getTime()
+          );
+        });
+
+        if (isDuplicate) {
+          alert("Даты уже существуют. Пожалуйста, выберите другие даты.");
+          return;
+        }
+
         if (editingIndex.current < 0) {
           setDays([
             ...days,
@@ -67,6 +93,8 @@ function DateAdd({
               dateRange: newData.dateRange,
             },
           ]);
+          onChangeDate &&
+            onChangeDate(newData.dateRange, Number(newData.quantity));
           setNewData(null);
           editingIndex.current = -1;
         } else {
@@ -75,6 +103,8 @@ function DateAdd({
             quantity: newData.quantity,
             dateRange: newData.dateRange,
           };
+          onChangeDate &&
+            onChangeDate(newData.dateRange, Number(newData.quantity));
           setDays(newDays);
           setNewData(null);
           editingIndex.current = -1;
@@ -142,6 +172,7 @@ function DateAdd({
         Выберите даты и укажите количество свободных мест. <br />
         Редактируйте данные по мере необходимости. <br />
       </p>
+
       <div onClick={createDate} className={classes.btn}>
         <svg
           width="17"
@@ -162,83 +193,111 @@ function DateAdd({
         <p className={classes.btnText}>Добавить дату</p>
       </div>
 
-      {days?.map((item, index) => (
-        <div key={index} className={classes.day}>
-          <div>
-            <p>
-              {item.dateRange?.from?.getTime() === item.dateRange?.to?.getTime()
-                ? moment(item.dateRange?.from).format("DD.MM.YYYY")
-                : moment(item.dateRange?.from).format("DD.MM.YYYY") +
-                  " - " +
-                  moment(item.dateRange?.to).format("DD.MM.YYYY")}
-            </p>
-            <div className={classes.places}>
-              <svg
-                width="16"
-                height="15"
-                viewBox="0 0 16 15"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M10.2227 10.9375V12.1875H1.69141V10.9375C1.69141 10.9375 1.69141 8.43751 5.95703 8.43751C10.2227 8.43751 10.2227 10.9375 10.2227 10.9375ZM8.08984 5.00003C8.08984 4.56738 7.96476 4.14445 7.7304 3.78472C7.49604 3.42499 7.16294 3.14461 6.77322 2.97905C6.3835 2.81348 5.95467 2.77016 5.54094 2.85457C5.12721 2.93897 4.74718 3.14731 4.44891 3.45323C4.15063 3.75916 3.9475 4.14893 3.8652 4.57327C3.78291 4.9976 3.82514 5.43743 3.98657 5.83714C4.148 6.23685 4.42137 6.57849 4.7721 6.81886C5.12284 7.05922 5.5352 7.18752 5.95703 7.18752C6.52269 7.18752 7.06518 6.95705 7.46516 6.54682C7.86514 6.13658 8.08984 5.58018 8.08984 5.00003ZM10.1861 8.43751C10.5607 8.73485 10.8672 9.11278 11.0841 9.5447C11.301 9.97662 11.423 10.452 11.4414 10.9375V12.1875H13.8789V10.9375C13.8789 10.9375 13.8789 8.66876 10.1861 8.43751ZM9.61328 2.81253C9.19384 2.81014 8.78363 2.93875 8.43719 3.18128C8.80735 3.71174 9.00638 4.34771 9.00638 5.00003C9.00638 5.65234 8.80735 6.28831 8.43719 6.81877C8.78363 7.0613 9.19384 7.18991 9.61328 7.18752C10.1789 7.18752 10.7214 6.95705 11.1214 6.54682C11.5214 6.13658 11.7461 5.58018 11.7461 5.00003C11.7461 4.41987 11.5214 3.86347 11.1214 3.45323C10.7214 3.043 10.1789 2.81253 9.61328 2.81253Z"
-                  fill="#0FA53A"
-                />
-              </svg>
-              <p className={classes.placesText}>
-                Свободно мест: {item.quantity}
+      {days?.map((item, index) => {
+        console.log(item.dateRange?.from, item.dateRange?.to);
+        return (
+          <div key={index} className={classes.day}>
+            <div>
+              <p>
+                {item.dateRange?.from?.getTime() ===
+                item.dateRange?.to?.getTime()
+                  ? moment(item.dateRange?.from).format("DD.MM.YYYY")
+                  : moment(item.dateRange?.from).format("DD.MM.YYYY") +
+                    " - " +
+                    moment(item.dateRange?.to).format("DD.MM.YYYY")}
               </p>
+              <div className={classes.placesWrapper}>
+                <div className={classes.places}>
+                  <svg
+                    width="16"
+                    height="15"
+                    viewBox="0 0 16 15"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M10.2227 10.9375V12.1875H1.69141V10.9375C1.69141 10.9375 1.69141 8.43751 5.95703 8.43751C10.2227 8.43751 10.2227 10.9375 10.2227 10.9375ZM8.08984 5.00003C8.08984 4.56738 7.96476 4.14445 7.7304 3.78472C7.49604 3.42499 7.16294 3.14461 6.77322 2.97905C6.3835 2.81348 5.95467 2.77016 5.54094 2.85457C5.12721 2.93897 4.74718 3.14731 4.44891 3.45323C4.15063 3.75916 3.9475 4.14893 3.8652 4.57327C3.78291 4.9976 3.82514 5.43743 3.98657 5.83714C4.148 6.23685 4.42137 6.57849 4.7721 6.81886C5.12284 7.05922 5.5352 7.18752 5.95703 7.18752C6.52269 7.18752 7.06518 6.95705 7.46516 6.54682C7.86514 6.13658 8.08984 5.58018 8.08984 5.00003ZM10.1861 8.43751C10.5607 8.73485 10.8672 9.11278 11.0841 9.5447C11.301 9.97662 11.423 10.452 11.4414 10.9375V12.1875H13.8789V10.9375C13.8789 10.9375 13.8789 8.66876 10.1861 8.43751ZM9.61328 2.81253C9.19384 2.81014 8.78363 2.93875 8.43719 3.18128C8.80735 3.71174 9.00638 4.34771 9.00638 5.00003C9.00638 5.65234 8.80735 6.28831 8.43719 6.81877C8.78363 7.0613 9.19384 7.18991 9.61328 7.18752C10.1789 7.18752 10.7214 6.95705 11.1214 6.54682C11.5214 6.13658 11.7461 5.58018 11.7461 5.00003C11.7461 4.41987 11.5214 3.86347 11.1214 3.45323C10.7214 3.043 10.1789 2.81253 9.61328 2.81253Z"
+                      fill="#0FA53A"
+                    />
+                  </svg>
+                  <p className={classes.placesText}>
+                    Свободно мест: {item.quantity}
+                  </p>
+                </div>
+                {item.avilable_slots && (
+                  <div className={classes.places}>
+                    <svg
+                      width="16"
+                      height="15"
+                      viewBox="0 0 16 15"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M10.2227 10.9375V12.1875H1.69141V10.9375C1.69141 10.9375 1.69141 8.43751 5.95703 8.43751C10.2227 8.43751 10.2227 10.9375 10.2227 10.9375ZM8.08984 5.00003C8.08984 4.56738 7.96476 4.14445 7.7304 3.78472C7.49604 3.42499 7.16294 3.14461 6.77322 2.97905C6.3835 2.81348 5.95467 2.77016 5.54094 2.85457C5.12721 2.93897 4.74718 3.14731 4.44891 3.45323C4.15063 3.75916 3.9475 4.14893 3.8652 4.57327C3.78291 4.9976 3.82514 5.43743 3.98657 5.83714C4.148 6.23685 4.42137 6.57849 4.7721 6.81886C5.12284 7.05922 5.5352 7.18752 5.95703 7.18752C6.52269 7.18752 7.06518 6.95705 7.46516 6.54682C7.86514 6.13658 8.08984 5.58018 8.08984 5.00003ZM10.1861 8.43751C10.5607 8.73485 10.8672 9.11278 11.0841 9.5447C11.301 9.97662 11.423 10.452 11.4414 10.9375V12.1875H13.8789V10.9375C13.8789 10.9375 13.8789 8.66876 10.1861 8.43751ZM9.61328 2.81253C9.19384 2.81014 8.78363 2.93875 8.43719 3.18128C8.80735 3.71174 9.00638 4.34771 9.00638 5.00003C9.00638 5.65234 8.80735 6.28831 8.43719 6.81877C8.78363 7.0613 9.19384 7.18991 9.61328 7.18752C10.1789 7.18752 10.7214 6.95705 11.1214 6.54682C11.5214 6.13658 11.7461 5.58018 11.7461 5.00003C11.7461 4.41987 11.5214 3.86347 11.1214 3.45323C10.7214 3.043 10.1789 2.81253 9.61328 2.81253Z"
+                        fill="#0FA53A"
+                      />
+                    </svg>
+                    <p className={classes.placesText}>
+                      Свободно было: {item.avilable_slots}
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
+            {(item.avilable_slots == Number(item.quantity) ||
+              !item.avilable_slots) && (
+              <div className={classes.dayBtnList}>
+                <div
+                  onClick={() =>
+                    setDays((old) => old.filter((item, i) => i !== index))
+                  }
+                  className={classes.delete}
+                >
+                  <svg
+                    width="21"
+                    height="21"
+                    viewBox="0 0 21 21"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M5.75391 5.5L15.7539 15.5"
+                      stroke="#EB5757"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    <path
+                      d="M5.75391 15.5L15.7539 5.5"
+                      stroke="#EB5757"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                  <p>Удалить</p>
+                </div>
+                <div onClick={() => edit(index)} className={classes.editBtn}>
+                  <svg
+                    width="17"
+                    height="17"
+                    viewBox="0 0 17 17"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M14.5606 5.19305C14.8206 4.93305 14.8206 4.49971 14.5606 4.25305L13.0006 2.69305C12.7539 2.43305 12.3206 2.43305 12.0606 2.69305L10.8339 3.91305L13.3339 6.41305L14.5606 5.19305ZM2.75391 11.9997V14.4997H5.25391L12.6272 7.11971L10.1272 4.61971L2.75391 11.9997Z"
+                      fill="#328AEE"
+                    />
+                  </svg>
+                  <p>Изменить</p>
+                </div>
+              </div>
+            )}
           </div>
-          <div className={classes.dayBtnList}>
-            <div
-              onClick={() =>
-                setDays((old) => old.filter((item, i) => i !== index))
-              }
-              className={classes.delete}
-            >
-              <svg
-                width="21"
-                height="21"
-                viewBox="0 0 21 21"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M5.75391 5.5L15.7539 15.5"
-                  stroke="#EB5757"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M5.75391 15.5L15.7539 5.5"
-                  stroke="#EB5757"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              </svg>
-              <p>Удалить</p>
-            </div>
-            <div onClick={() => edit(index)} className={classes.editBtn}>
-              <svg
-                width="17"
-                height="17"
-                viewBox="0 0 17 17"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M14.5606 5.19305C14.8206 4.93305 14.8206 4.49971 14.5606 4.25305L13.0006 2.69305C12.7539 2.43305 12.3206 2.43305 12.0606 2.69305L10.8339 3.91305L13.3339 6.41305L14.5606 5.19305ZM2.75391 11.9997V14.4997H5.25391L12.6272 7.11971L10.1272 4.61971L2.75391 11.9997Z"
-                  fill="#328AEE"
-                />
-              </svg>
-              <p>Изменить</p>
-            </div>
-          </div>
-        </div>
-      ))}
+        );
+      })}
     </>
   );
 }

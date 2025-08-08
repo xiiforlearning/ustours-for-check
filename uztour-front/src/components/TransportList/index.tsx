@@ -3,60 +3,49 @@ import { Dict } from "@/types";
 import PrimaryBtn from "../ui/PrimaryBtn";
 import classes from "./TransportList.module.css";
 import { Locale } from "@/i18n-config";
-import { useState } from "react";
+// import { useState } from "react";
 // import { useSearchParams } from "next/navigation";
 function TransportList({ lang, dict }: { lang: Locale; dict: Dict }) {
   // const searchParams = useSearchParams();
   lang;
-  const [mainData, setMainData] = useState<
-    {
-      image: string;
-      name: string;
-      people: number;
-      baggage: number;
-      freeWaitTime: Dict;
-      price: number;
-    }[]
-  >([]);
+  // const [mainData, setMainData] = useState<
+  //   {
+  //     image: string;
+  //     name: string;
+  //     people: number;
+  //     baggage: number;
+  //     freeWaitTime: Dict;
+  //     price: number;
+  //   }[]
+  // >([]);
   const data = [
     {
-      image: "/images/car1.png",
-      name: "Chevrolet Lacetti",
+      image: "/images/sedan.svg",
+      name: "sedan",
       people: 2,
       baggage: 2,
+      type: "sedan",
       freeWaitTime: {
-        ru: "1 часа бесплатно",
-        cn: "1 小时免费等待",
-        en: "1 hours free wait",
-        uz: "1 soat bepul kutish",
+        ru: "1.5 часа",
+        cn: "1.5 小时",
+        en: "1.5 hours",
+        uz: "1.5 soat",
       },
-      price: 12,
+      price: 20,
     },
     {
-      image: "/images/car2.png",
-      name: "Chevrolet Cobalt",
-      people: 2,
-      baggage: 2,
+      image: "/images/minivan.svg",
+      name: "minivan",
+      people: 9,
+      baggage: 6,
       freeWaitTime: {
-        ru: "2 часа бесплатно",
-        cn: "2小时免费等待",
-        en: "2 hours free wait",
-        uz: "2 soat bepul kutish",
+        ru: "1.5 часа",
+        cn: "1.5 小时",
+        en: "1.5 hours",
+        uz: "1.5 soat",
       },
-      price: 14,
-    },
-    {
-      image: "/images/car3.png",
-      name: "Chevrolet Malibu",
-      people: 2,
-      baggage: 2,
-      freeWaitTime: {
-        ru: "1 часа бесплатно",
-        cn: "1 小时免费等待",
-        en: "1 hours free wait",
-        uz: "1 soat bepul kutish",
-      },
-      price: 16,
+      price: 35,
+      type: "minivan",
     },
   ];
 
@@ -67,7 +56,12 @@ function TransportList({ lang, dict }: { lang: Locale; dict: Dict }) {
           <img className={classes.carImage} src={item.image} />
           <div className={classes.info}>
             <div className={classes.topInfo}>
-              <p className={classes.name}>{item.name}</p>
+              <p className={classes.name}>
+                {
+                  //@ts-expect-error aaa
+                  dict[item.name]
+                }
+              </p>
 
               <div className={classes.infoItem}>
                 <svg
@@ -100,19 +94,6 @@ function TransportList({ lang, dict }: { lang: Locale; dict: Dict }) {
 
                 <p className={classes.infoItemText}>{item.baggage}</p>
               </div>
-              <svg
-                width="33"
-                height="32"
-                viewBox="0 0 33 32"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <rect x="0.5" width="32" height="32" rx="8" fill="white" />
-                <path
-                  d="M18.5473 15.5007L17.9473 16.114C17.4673 16.594 17.1673 17.0007 17.1673 18.0007H15.834V17.6673C15.834 16.9273 16.134 16.2607 16.614 15.7807L17.4407 14.9407C17.6873 14.7007 17.834 14.3673 17.834 14.0007C17.834 13.2607 17.234 12.6673 16.5007 12.6673C16.147 12.6673 15.8079 12.8078 15.5578 13.0578C15.3078 13.3079 15.1673 13.647 15.1673 14.0007H13.834C13.834 13.2934 14.1149 12.6151 14.615 12.115C15.1151 11.6149 15.7934 11.334 16.5007 11.334C17.2079 11.334 17.8862 11.6149 18.3863 12.115C18.8864 12.6151 19.1673 13.2934 19.1673 14.0007C19.1673 14.5873 18.9273 15.114 18.5473 15.5007ZM17.1673 20.6673H15.834V19.334H17.1673V20.6673ZM16.5007 9.33398C15.6252 9.33398 14.7583 9.50642 13.9494 9.84145C13.1406 10.1765 12.4057 10.6675 11.7866 11.2866C10.5364 12.5368 9.83398 14.2325 9.83398 16.0007C9.83398 17.7688 10.5364 19.4645 11.7866 20.7147C12.4057 21.3338 13.1406 21.8248 13.9494 22.1598C14.7583 22.4949 15.6252 22.6673 16.5007 22.6673C18.2688 22.6673 19.9645 21.9649 21.2147 20.7147C22.4649 19.4645 23.1673 17.7688 23.1673 16.0007C23.1673 12.314 20.1673 9.33398 16.5007 9.33398Z"
-                  fill="#BBBBBB"
-                />
-              </svg>
             </div>
 
             <div className={classes.features}>
@@ -131,7 +112,14 @@ function TransportList({ lang, dict }: { lang: Locale; dict: Dict }) {
                 </svg>
 
                 <p className={classes.featureText}>
-                  {dict.freeWait}: 2 {dict["hours"]}
+                  {dict.freeWait}:{" "}
+                  {lang == "cn"
+                    ? item.freeWaitTime.cn
+                    : lang == "en"
+                    ? item.freeWaitTime.en
+                    : lang == "ru"
+                    ? item.freeWaitTime.ru
+                    : item.freeWaitTime.uz}
                 </p>
               </div>
               <div className={classes.feature}>
@@ -208,21 +196,6 @@ function TransportList({ lang, dict }: { lang: Locale; dict: Dict }) {
                   {dict["instantConfirmation"]}
                 </p>
               </div>
-            </div>
-            <div className={classes.moreInfo}>
-              <p className={classes.moreInfoText}>{dict["more"]}</p>
-              <svg
-                width="21"
-                height="20"
-                viewBox="0 0 21 20"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  d="M7.6582 13.8167L11.4749 10L7.6582 6.175L8.8332 5L13.8332 10L8.8332 15L7.6582 13.8167Z"
-                  fill="#328AEE"
-                />
-              </svg>
             </div>
           </div>
           <div className={classes.priceContent}>

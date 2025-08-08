@@ -5,18 +5,20 @@ function PrimaryBtn({
   disabled,
   onClick,
   loading,
+  isRed,
 }: {
   text: string;
   disabled?: boolean;
   onClick: () => void;
   loading?: boolean;
+  isRed?: boolean;
 }) {
   return (
     <div
       onClick={onClick}
       style={{
         cursor: disabled ? "not-allowed" : "pointer",
-        backgroundColor: disabled ? "#F5F5F5" : "#328AEE",
+        backgroundColor: disabled ? "#F5F5F5" : isRed ? "#EB5757" : "#328AEE",
       }}
       className={classes.container}
     >

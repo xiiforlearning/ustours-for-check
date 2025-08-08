@@ -3,7 +3,13 @@ import { useEffect, useRef, useState } from "react";
 import classes from "./MainSearch.module.css";
 import { listType } from "@/consts";
 import { Dict } from "@/types";
-function TypeExcursion({ dict }: { dict: Dict }) {
+function TypeExcursion({
+  dict,
+  onChange,
+}: {
+  dict: Dict;
+  onChange: (type: string) => void;
+}) {
   const [value, setValue] = useState("");
   const [open, setOpen] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -41,6 +47,8 @@ function TypeExcursion({ dict }: { dict: Dict }) {
                     e.stopPropagation();
                     setValue(type);
                     setOpen(false);
+
+                    onChange(type == listType[0] ? "" : type);
                   }}
                   className={classes.city}
                   key={type}

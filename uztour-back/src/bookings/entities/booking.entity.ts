@@ -39,8 +39,8 @@ export class Booking {
   @Column('int', { default: 0 })
   children_count!: number;
 
-  @Column('int', { default: 0 })
-  infants_count!: number;
+  @Column('boolean', { default: false })
+  isGroup!: boolean;
 
   @Column('decimal', { precision: 10, scale: 2 })
   total_price!: number;

@@ -39,6 +39,10 @@ function GuideTourCreate({ dict }: { dict: Dict }) {
     duration: "",
     price: "",
     child_price: "",
+    whole_price: "", // Добавляем поле для цены за всю экскурсию
+    min_persons: "", // Добавляем поле для минимального количества человек
+    max_persons: "", // Добавляем поле для максимального количества человек
+    category: "cultural", // Добавляем поле для категории тура, по умолчанию культурный
     description: "",
     included: [""],
     excluded: [""],
@@ -49,12 +53,14 @@ function GuideTourCreate({ dict }: { dict: Dict }) {
     gallery: [],
     cities: [],
     duration_unit: "hours",
-    type: "private",
+    type: "group",
     difficulty: "easy",
     departure_city: "",
     departure_time: "",
     languages: [],
   });
+  // Добавляем тип встречи: 'point' (точка встречи) или 'hotel' (трансфер)
+  const [meetingType, setMeetingType] = useState<"point" | "hotel">("point");
 
   const [programs, setPrograms] = useState<TypeProgram[]>([]);
 
@@ -306,6 +312,11 @@ function GuideTourCreate({ dict }: { dict: Dict }) {
       id: id.current,
       availability,
       programsList,
+      departure_address: meetingType === "point" ? data?.address : "",
+      departure_landmark:
+        meetingType === "point" ? data?.orientation : "fromHotel",
+      departure_lat: meetingType === "point" ? data?.selectedCordinates[0] : 0,
+      departure_lng: meetingType === "point" ? data?.selectedCordinates[1] : 0,
     });
     if (res.id) {
       id.current = res.id;
@@ -318,7 +329,9 @@ function GuideTourCreate({ dict }: { dict: Dict }) {
     if (id.current) {
       const fetchData = async () => {
         const res = await getExactTours({ id: id.current });
-
+        if (res.departure_landmark == "fromHotel") {
+          setMeetingType("hotel");
+        }
         setData((prevData) => ({
           ...prevData,
           title: res.title,
@@ -384,13 +397,17 @@ function GuideTourCreate({ dict }: { dict: Dict }) {
     const requiredFields = [
       "title",
       "duration",
-      "price",
-      "child_price",
+      // "price", // убираем из общего списка
+      // "child_price", // убираем из общего списка
+      // "whole_price", // убираем из общего списка
+      "min_persons", // Добавляем в обязательные поля
+      "max_persons", // Добавляем в обязательные поля
+      "category", // Добавляем в обязательные поля
       "description",
       "included",
       "excluded",
-      "orientation",
-      "address",
+      // "orientation", // убираем из общего списка
+      // "address", // убираем из общего списка
       "selectedCordinates",
       "poster",
       "cities",
@@ -402,29 +419,104 @@ function GuideTourCreate({ dict }: { dict: Dict }) {
       "languages",
     ];
 
+    // Соответствие ключей и русских названий полей
+    const fieldNamesRu: Record<string, string> = {
+      title: "Название тура",
+      duration: "Длительность",
+      price: "Цена для взрослого",
+      child_price: "Цена для ребёнка",
+      whole_price: "Цена за всю экскурсию",
+      min_persons: "Минимальное количество человек",
+      max_persons: "Максимальное количество человек",
+      category: "Категория тура",
+      description: "Описание экскурсии",
+      included: "Включено в стоимость",
+      excluded: "Не включено в стоимость",
+      orientation: "Ориентир (место встречи)",
+      address: "Адрес (автоматически)",
+      selectedCordinates: "Координаты места встречи",
+      poster: "Постер",
+      gallery: "Галерея",
+      cities: "Города экскурсии",
+      duration_unit: "Единица измерения",
+      type: "Тип экскурсии",
+      difficulty: "Сложность",
+      departure_city: "Город отправления",
+      departure_time: "Время отправления",
+      languages: "Языки проведения экскурсии",
+    };
+
     for (const key of requiredFields) {
       const value = (data as any)[key];
       const isEmptyArray = Array.isArray(value) && value.length === 0;
       const isEmptyString = typeof value === "string" && value.trim() === "";
 
       if (isEmptyArray || isEmptyString) {
-        alert(`Field "${key}" cannot be empty.`);
+        alert(`Поле "${fieldNamesRu[key] || key}" не может быть пустым.`);
         return;
       }
     }
 
-    const isProgramsValid = programs.every(
-      (p) => p.name.trim() !== "" && p.description.trim() !== ""
-    );
+    // Проверка, что каждый элемент в included и excluded не пустой
+    if (
+      Array.isArray(data.included) &&
+      data.included.filter((item) => item).length == 0
+    ) {
+      alert('Пожалуйста, заполните все поля "Включено в стоимость".');
+      return;
+    }
+    if (
+      Array.isArray(data.excluded) &&
+      data.excluded.filter((item) => item).length == 0
+    ) {
+      alert('Пожалуйста, заполните все поля "Не включено в стоимость".');
+      return;
+    }
+
+    // Проверка цен в зависимости от типа экскурсии
+    if (data.type === "group") {
+      if (!data.price || !data.price.trim()) {
+        alert("Пожалуйста, укажите цену для взрослого.");
+        return;
+      }
+      if (!data.child_price || !data.child_price.trim()) {
+        alert("Пожалуйста, укажите цену для ребёнка.");
+        return;
+      }
+    } else if (data.type === "private") {
+      if (!data.whole_price || !data.whole_price.trim()) {
+        alert("Пожалуйста, укажите цену за всю экскурсию.");
+        return;
+      }
+    }
+
+    // Если выбран тип встречи 'point', то ориентир и адрес обязательны
+    if (meetingType === "point") {
+      if (!data.orientation || !data.orientation.trim()) {
+        alert("Пожалуйста, укажите ориентир для встречи.");
+        return;
+      }
+      if (!data.address || !data.address.trim()) {
+        alert("Пожалуйста, укажите адрес для встречи.");
+        return;
+      }
+    }
+
+    if (images.length < 4) {
+      alert("Пожалуйста, загрузите минимум 4 фотографии в галерею.");
+      return;
+    }
+
+    const isProgramsValid = programs.every((p) => p.description.trim() !== "");
 
     if (!isProgramsValid) {
-      alert("Each program must have a title and description.");
+      alert("Каждая программа должна содержать описание.");
       return;
     }
 
     if (days.length === 0) {
       alert(
-        "Пожалуйста, укажите хотя бы одну дату. Вы можете воспользоваться кнопкой «Добавить дату"
+        "Пожалуйста, укажите хотя бы одну дату. Вы можете воспользоваться кнопкой «Добавить дату»"
       );
       return;
     }
@@ -443,7 +535,6 @@ function GuideTourCreate({ dict }: { dict: Dict }) {
     }));
 
     const programsList = programs.map((item) => ({
-      title: item.name,
       description: item.description,
       photos: item.photos,
     }));
@@ -453,6 +544,11 @@ function GuideTourCreate({ dict }: { dict: Dict }) {
       availability,
       programsList,
       isSubmit: true,
+      departure_address: meetingType === "point" ? data?.address : "",
+      departure_landmark:
+        meetingType === "point" ? data?.orientation : "fromHotel",
+      departure_lat: meetingType === "point" ? data?.selectedCordinates[0] : 0,
+      departure_lng: meetingType === "point" ? data?.selectedCordinates[1] : 0,
     });
     if (res.id) {
       id.current = res.id;
@@ -556,13 +652,18 @@ function GuideTourCreate({ dict }: { dict: Dict }) {
             maxNumber={1}
             dataURLKey="data_url"
           >
-            {({ imageList, onImageUpload }) => (
+            {({ imageList, onImageUpload, onImageUpdate }) => (
               <>
                 {imageList[0] && (
                   <img className={classes.poster} src={imageList[0].data_url} />
                 )}
 
-                <div onClick={onImageUpload} className={classes.selectPhoto}>
+                <div
+                  onClick={
+                    imageList.length ? () => onImageUpdate(0) : onImageUpload
+                  }
+                  className={classes.selectPhoto}
+                >
                   <svg
                     width="23"
                     height="22"
@@ -709,6 +810,7 @@ function GuideTourCreate({ dict }: { dict: Dict }) {
                 }))}
               />
             </div>
+
             <div className={classes.listField}>
               <p className={classes.labelSelect}>Длительность</p>
               <TextField
@@ -740,13 +842,13 @@ function GuideTourCreate({ dict }: { dict: Dict }) {
           <div style={{ height: 20 }} />
           <div className={classes.listFields}>
             <div className={classes.listField}>
-              <p className={classes.labelSelect}>Тип экскурсии</p>
-              <Select
-                placeholder=""
-                value={types.find((item) => item.value == data.type)}
-                //@ts-expect-error aaa
-                onChange={typeChangeHandler}
-                options={types}
+              <p className={classes.labelSelect}>Время отправки</p>
+              <TextField
+                value={data.departure_time}
+                placeHolder="Например: 10:00"
+                setValue={(value: string) =>
+                  setData({ ...data, departure_time: value })
+                }
               />
             </div>
             <div className={classes.listField}>
@@ -761,67 +863,6 @@ function GuideTourCreate({ dict }: { dict: Dict }) {
                 options={difficulties}
               />
             </div>
-            <div className={classes.listField}>
-              <p className={classes.labelSelect}>Отправление</p>
-              <Select
-                placeholder=""
-                onChange={citiesFromChangeHandler}
-                value={{
-                  value: data.departure_city,
-                  //@ts-expect-error aaa
-                  label: dict[data.departure_city],
-                }}
-                options={cities.map((lang) => ({
-                  value: lang,
-                  //@ts-expect-error aaa
-                  label: dict[lang],
-                }))}
-              />
-            </div>
-          </div>
-          <div style={{ height: 20 }} />
-          <div className={classes.listFields}>
-            <div className={classes.listField}>
-              <p className={classes.labelSelect}>Время отправки</p>
-              <TextField
-                value={data.departure_time}
-                placeHolder="Например: 10:00"
-                setValue={(value: string) =>
-                  setData({ ...data, departure_time: value })
-                }
-              />
-            </div>
-            <div className={classes.listField}>
-              <p className={classes.labelSelect}>
-                Цена для взрослого в долларах
-              </p>
-              <TextField
-                value={data.price}
-                placeHolder="Например: 50"
-                setValue={(value: string) =>
-                  setData({
-                    ...data,
-                    price: value.replace(/[^0-9]/g, ""),
-                  })
-                }
-              />
-            </div>
-            <div className={classes.listField}>
-              <p className={classes.labelSelect}>Цена для ребёнка</p>
-              <TextField
-                value={data.child_price}
-                placeHolder="Например: 40"
-                setValue={(value: string) =>
-                  setData({
-                    ...data,
-                    child_price: value.replace(/[^0-9]/g, ""),
-                  })
-                }
-              />
-            </div>
-          </div>
-          <div style={{ height: 20 }} />
-          <div className={classes.listFields}>
             <div className={classes.listField}>
               <p className={classes.labelSelect}>Языки проведения экскурсий</p>
               <Select
@@ -840,9 +881,142 @@ function GuideTourCreate({ dict }: { dict: Dict }) {
                 }))}
               />
             </div>
-            <div className={classes.listField}></div>
-            <div className={classes.listField}></div>
           </div>
+          <div style={{ height: 20 }} />
+          <div className={classes.listFields}>
+            <div className={classes.listField}>
+              <p className={classes.labelSelect}>Тип экскурсии</p>
+              <Select
+                placeholder=""
+                value={types.find((item) => item.value == data.type)}
+                //@ts-expect-error aaa
+                onChange={typeChangeHandler}
+                options={types}
+              />
+            </div>
+            {data.type === "group" ? (
+              <>
+                <div className={classes.listField}>
+                  <p className={classes.labelSelect}>
+                    Цена для взрослого в долларах
+                  </p>
+                  <TextField
+                    value={data.price}
+                    placeHolder="Например: 50"
+                    setValue={(value: string) =>
+                      setData({
+                        ...data,
+                        price: value.replace(/[^0-9]/g, ""),
+                      })
+                    }
+                  />
+                </div>
+                <div className={classes.listField}>
+                  <p className={classes.labelSelect}>Цена для ребёнка</p>
+                  <TextField
+                    value={data.child_price}
+                    placeHolder="Например: 40"
+                    setValue={(value: string) =>
+                      setData({
+                        ...data,
+                        child_price: value.replace(/[^0-9]/g, ""),
+                      })
+                    }
+                  />
+                </div>
+              </>
+            ) : (
+              <div className={classes.listField}>
+                <p className={classes.labelSelect}>
+                  Цена за всю экскурсию в долларах
+                </p>
+                <TextField
+                  value={data.whole_price}
+                  placeHolder="Например: 150"
+                  setValue={(value: string) =>
+                    setData({
+                      ...data,
+                      whole_price: value.replace(/[^0-9]/g, ""),
+                    })
+                  }
+                />
+              </div>
+            )}
+            <div className={classes.listField}>
+              <p className={classes.labelSelect}>Категория тура</p>
+              <Select
+                value={[
+                  { value: "cultural", label: "Культурные туры" },
+                  { value: "active", label: "Активные туры" },
+                  { value: "relaxing", label: "Туры для отдыха" },
+                ].find((item) => item.value === data.category)}
+                onChange={(option) => {
+                  if (option?.value) {
+                    setData({ ...data, category: option.value });
+                  }
+                }}
+                options={[
+                  { value: "cultural", label: "Культурные туры" },
+                  { value: "active", label: "Активные туры" },
+                  { value: "relaxing", label: "Туры для отдыха" },
+                ]}
+                isSearchable={false}
+              />
+            </div>
+          </div>
+          <div style={{ height: 20 }} />
+          <div className={classes.listFields}>
+            <div className={classes.listField}>
+              <p className={classes.labelSelect}>Отправление</p>
+              <Select
+                placeholder=""
+                onChange={citiesFromChangeHandler}
+                value={{
+                  value: data.departure_city,
+                  //@ts-expect-error aaa
+                  label: dict[data.departure_city],
+                }}
+                options={cities.map((lang) => ({
+                  value: lang,
+                  //@ts-expect-error aaa
+                  label: dict[lang],
+                }))}
+              />
+            </div>
+            <div className={classes.listField}>
+              <p className={classes.labelSelect}>
+                Максимальное количество человек
+              </p>
+              <TextField
+                value={data.max_persons}
+                placeHolder="Например: 10"
+                setValue={(value: string) =>
+                  setData({
+                    ...data,
+                    max_persons: value.replace(/[^0-9]/g, ""),
+                  })
+                }
+              />
+            </div>
+            <div className={classes.listField}>
+              <p className={classes.labelSelect}>
+                Минимальное количество человек
+              </p>
+              <TextField
+                value={data.min_persons}
+                placeHolder="Например: 2"
+                setValue={(value: string) =>
+                  setData({
+                    ...data,
+                    min_persons: value.replace(/[^0-9]/g, ""),
+                  })
+                }
+              />
+            </div>
+          </div>
+
+          <div style={{ height: 20 }} />
+
           <div style={{ height: 20 }} />
           <DateAdd duration={duration} days={days} setDays={setDays} />
 
@@ -902,7 +1076,7 @@ function GuideTourCreate({ dict }: { dict: Dict }) {
                         }),
                       });
                     }}
-                    placeHolder="Например: Входные билеты в музеи"
+                    placeHolder="Например: Услуги гида"
                     value={item}
                   />
                 </div>
@@ -1024,33 +1198,64 @@ function GuideTourCreate({ dict }: { dict: Dict }) {
           <div style={{ height: 30 }} />
           <h2 className={classes.title}>Место встречи</h2>
           <div style={{ height: 20 }} />
-          <TextField
-            setValue={(value: string) => {
-              setData({ ...data, orientation: value });
-            }}
-            value={data.orientation}
-            placeHolder="Ориентир"
-          />
+          {/* Новый селектор типа встречи */}
+          <div className={classes.listFields}>
+            <div className={classes.listField}>
+              <p className={classes.labelSelect}>Тип встречи</p>
+              <Select
+                value={
+                  meetingType === "point"
+                    ? { value: "point", label: "Встреча в определённой точке" }
+                    : { value: "hotel", label: "Включён трансфер из отеля" }
+                }
+                onChange={(option) => {
+                  if (option?.value === "hotel" || option?.value === "point") {
+                    setMeetingType(option.value);
+                  }
+                }}
+                options={[
+                  { value: "point", label: "Встреча в определённой точке" },
+                  { value: "hotel", label: "Включён трансфер из отеля" },
+                ]}
+                isSearchable={false}
+              />
+            </div>
+          </div>
           <div style={{ height: 20 }} />
-          <h2 className={classes.title}>{data.address}</h2>
-          <div style={{ height: 20 }} />
+          {/* Показываем поля только если выбран тип встречи 'point' */}
+          {meetingType === "point" && (
+            <>
+              <TextField
+                setValue={(value: string) => {
+                  setData({ ...data, orientation: value });
+                }}
+                value={data.orientation}
+                placeHolder="Ориентир"
+              />
+              <div style={{ height: 20 }} />
+              <h2 className={classes.title}>{data.address}</h2>
+              <div style={{ height: 20 }} />
 
-          <YMaps
-            query={{
-              lang: "ru_RU",
-              apikey: "7fe61813-5a1f-42a7-8549-3641b268be1f",
-            }}
-          >
-            <Map
-              onClick={handleMapClick}
-              style={{ width: "100%", height: "400px" }}
-              defaultState={{ center: [41.2995, 69.2401], zoom: 9 }}
-              onLoad={handleMapLoad}
-            >
-              <SearchControl options={{ float: "right", noPlacemark: true }} />
-              <Placemark geometry={data.selectedCordinates} />
-            </Map>
-          </YMaps>
+              <YMaps
+                query={{
+                  lang: "ru_RU",
+                  apikey: "7fe61813-5a1f-42a7-8549-3641b268be1f",
+                }}
+              >
+                <Map
+                  onClick={handleMapClick}
+                  style={{ width: "100%", height: "400px" }}
+                  defaultState={{ center: [41.2995, 69.2401], zoom: 9 }}
+                  onLoad={handleMapLoad}
+                >
+                  <SearchControl
+                    options={{ float: "right", noPlacemark: true }}
+                  />
+                  <Placemark geometry={data.selectedCordinates} />
+                </Map>
+              </YMaps>
+            </>
+          )}
         </div>
       </div>
     </div>

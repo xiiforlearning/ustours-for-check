@@ -3,8 +3,11 @@ import Image from "next/image";
 import classes from "./Footer.module.css";
 import { Dict } from "@/types";
 import useStore from "@/store/useStore";
-function Footer({ dict }: { dict: Dict }) {
+import Link from "next/link";
+import { Locale } from "@/i18n-config";
+function Footer({ dict, lang }: { dict: Dict; lang: Locale }) {
   const user = useStore((state) => state.user);
+
   return (user && user.user.type !== "partner") || !user ? (
     <div className={classes.wrapper}>
       <div className={classes.container}>
@@ -19,23 +22,36 @@ function Footer({ dict }: { dict: Dict }) {
               height={28}
             />
             <p className={classes.footerText}></p>
-            <p className={classes.footerText}>
+            <Link href={"/privacy.docx"} className={classes.footerText}>
               {dict["footer.privacy_policy"]}
-            </p>
-            <p className={classes.footerText}>{dict["footer.public_offer"]}</p>
+            </Link>
+            <Link href={"/agreement.docx"} className={classes.footerText}>
+              {dict["footer.public_offer"]}
+            </Link>
           </div>
 
           <div className={`${classes.footerContent} ${classes.secondColumn}`}>
-            <p className={classes.footerText}>{dict["footer.excursions"]}</p>
-            <p className={classes.footerText}>
+            <Link
+              href={"/" + lang + "/excursions"}
+              className={classes.footerText}
+            >
+              {dict["footer.excursions"]}
+            </Link>
+            <Link
+              href={"/" + lang + "/transfer"}
+              className={classes.footerText}
+            >
               {dict["footer.order_transfer"]}
-            </p>
+            </Link>
             {/* <p className={classes.footerText}>Помощь</p> */}
           </div>
 
           <div className={classes.footerContent}>
             <div className={classes.social}>
-              <div className={classes.socialItem}>
+              <Link
+                href={"https://t.me/uztoursuz"}
+                className={classes.socialItem}
+              >
                 <svg
                   width="16"
                   height="16"
@@ -48,8 +64,11 @@ function Footer({ dict }: { dict: Dict }) {
                     fill="#328AEE"
                   />
                 </svg>
-              </div>
-              <div className={classes.socialItem}>
+              </Link>
+              <Link
+                href={"http://wa.me/+998998939522"}
+                className={classes.socialItem}
+              >
                 <svg
                   width="16"
                   height="16"
@@ -62,7 +81,7 @@ function Footer({ dict }: { dict: Dict }) {
                     fill="#328AEE"
                   />
                 </svg>
-              </div>
+              </Link>
             </div>
             <div className={classes.link}>
               <svg
@@ -93,7 +112,7 @@ function Footer({ dict }: { dict: Dict }) {
                 />
               </svg>
 
-              <p className={classes.footerText}>uztours@gmail.com</p>
+              <p className={classes.footerText}>uztoursmail@gmail.com</p>
             </div>
             <div className={classes.link}>
               <svg

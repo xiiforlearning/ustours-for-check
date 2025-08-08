@@ -1,11 +1,11 @@
 "use client";
 import useStore from "@/store/useStore";
-import Search from "../Search";
+// import Search from "../Search";
 import classes from "./Header.module.css";
 import LangBtn from "./LangBtn";
 import Image from "next/image";
 import LoginModal from "../LoginModal";
-import Currency from "./Currency";
+// import Currency from "./Currency";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import Link from "next/link";
@@ -63,13 +63,13 @@ function Header({ lang, dict }: { lang: Locale; dict: Dict }) {
                 height={22}
               />
             </Link>
-            {(user && user.user.type == "customer") || !user ? (
+            {/* {(user && user.user.type == "customer") || !user ? (
               <>
                 <Search dict={dict} />
               </>
-            ) : null}
+            ) : null} */}
           </div>
-          <div className={classes.center}>
+          {/* <div className={classes.center}>
             {(user && user.user.type == "customer") || !user ? (
               <>
                 <LangBtn lang={lang} />
@@ -82,8 +82,26 @@ function Header({ lang, dict }: { lang: Locale; dict: Dict }) {
                 </Link>
               </>
             ) : null}
-          </div>
+          </div> */}
           <div className={classes.leftSide}>
+            <div className={classes.center}>
+              {(user && user.user.type == "customer") || !user ? (
+                <>
+                  <LangBtn lang={lang} />
+                  {/* <Currency /> */}
+                  <Link href={"/" + lang + "/tours/"} className={classes.links}>
+                    {dict["header.excursions"]}
+                  </Link>
+                  <Link
+                    href={"/" + lang + "/transfer"}
+                    className={classes.links}
+                  >
+                    {dict["header.order_transfer"]}
+                  </Link>
+                </>
+              ) : null}
+            </div>
+
             {!user && user !== 0 ? (
               <>
                 <div
@@ -99,7 +117,7 @@ function Header({ lang, dict }: { lang: Locale; dict: Dict }) {
                 </div>
               </>
             ) : (
-              user !== 0 && <Profile dict={dict} user={user} />
+              user !== 0 && <Profile lang={lang} dict={dict} user={user} />
             )}
 
             <div onClick={burgerClick} className={classes.burger}>

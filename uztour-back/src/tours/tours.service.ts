@@ -6,6 +6,7 @@ import { CreateTourDto } from './dto/create-tour.dto';
 import { TourFiltersDto, SortField, SortOrder } from './dto/tour-filters.dto';
 import { UsersService } from '../users/users.service';
 import { CurrencyService } from '../currency/currency.service';
+import * as moment from 'moment-timezone';
 
 @Injectable()
 export class ToursService {
@@ -23,6 +24,26 @@ export class ToursService {
       throw new NotFoundException('Partner not found for this user');
     }
 
+    // Проверка на дубли дат в availability
+    if (createTourDto.availability) {
+      const seenDates = new Set();
+      for (const item of createTourDto.availability) {
+        let itemDateISO = item.date;
+        if (/^\d{2}\.\d{2}\.\d{4}$/.test(item.date)) {
+          const [day, month, year] = item.date.split('.');
+          itemDateISO = `${year}-${month}-${day}`;
+        }
+        if (seenDates.has(itemDateISO)) {
+          throw new BadRequestException(`Duplicate date found in availability: ${item.date}`);
+        }
+        seenDates.add(itemDateISO);
+      }
+    }
+
+    // Синхронизируем available_dates с availability
+    const availability = createTourDto.availability ?? [];
+    const available_dates = availability.map(item => item.date).filter(Boolean);
+
     const tourData = {
       ...createTourDto,
       partner_id: partner.id, // Use partner ID from database, not from DTO
@@ -31,8 +52,8 @@ export class ToursService {
       days: createTourDto.days ?? [],
       included: createTourDto.included ?? [],
       excluded: createTourDto.excluded ?? [],
-      available_dates: createTourDto.available_dates ?? [],
-      availability: createTourDto.availability ?? [],
+      available_dates: available_dates,
+      availability: availability,
       city: createTourDto.city ?? [],
       status: createTourDto.status ?? undefined,
       rating: createTourDto.rating ?? undefined,
@@ -44,6 +65,7 @@ export class ToursService {
       max_persons: createTourDto.max_persons ?? undefined,
       departure: createTourDto.departure ?? undefined,
       price: createTourDto.price ?? undefined,
+      group_price: createTourDto.group_price ?? undefined,
       currency: createTourDto.currency || 'USD', // <-- default USD
       difficulty: createTourDto.difficulty ?? undefined,
       departure_time: createTourDto.departure_time ?? undefined,
@@ -69,42 +91,42 @@ export class ToursService {
     partner_id?: string,
     currency?: string
   ): Promise<{ tours: any[]; total: number; page: number; limit: number; totalPages: number }> {
+    console.log('ToursService.findAll called with partner_id:', partner_id);
+    
     const queryBuilder = this.tourRepository
       .createQueryBuilder('tour')
       .leftJoinAndSelect('tour.partner', 'partner');
 
     if (partner_id) {
+      console.log('Adding partner_id filter:', partner_id);
       queryBuilder.andWhere('tour.partner_id = :partner_id', { partner_id });
     } else {
+      console.log('Adding active status filter');
       queryBuilder.andWhere('tour.status = :status', { status: 'active' });
     }
 
     // Фильтрация по цене с учётом валюты
-    let minPriceUZS: number | undefined;
-    let maxPriceUZS: number | undefined;
     if (filters?.minPrice !== undefined || filters?.maxPrice !== undefined) {
-      const targetCurrency = (filters as any).price || 'UZS';
+      // Подключаем таблицу курсов валют для тура
+      queryBuilder.leftJoin('currency_rates', 'cr_from', 'cr_from.code = tour.currency');
+      
+      const targetCurrency = currency || 'USD';
       const toRate = await this.currencyService.getCurrencyRate(targetCurrency).then(r => r.rate);
+      
       if (toRate) {
         if (filters.minPrice !== undefined) {
-          minPriceUZS = filters.minPrice * toRate;
+          const minPriceUZS = filters.minPrice * toRate;
+          queryBuilder.andWhere('(tour.price * cr_from.rate) >= :minPriceUZS', { minPriceUZS });
         }
         if (filters.maxPrice !== undefined) {
-          maxPriceUZS = filters.maxPrice * toRate;
+          const maxPriceUZS = filters.maxPrice * toRate;
+          queryBuilder.andWhere('(tour.price * cr_from.rate) <= :maxPriceUZS', { maxPriceUZS });
         }
       }
     }
 
-    this.applyFilters(queryBuilder, filters);
-
-    // Применяем фильтрацию по цене в UZS
-    if (minPriceUZS !== undefined) {
-      queryBuilder.andWhere('(tour.price * cr_from.Rate) >= :minPriceUZS', { minPriceUZS });
-    }
-    if (maxPriceUZS !== undefined) {
-      queryBuilder.andWhere('(tour.price * cr_from.Rate) <= :maxPriceUZS', { maxPriceUZS });
-    }
-
+    // Применяем фильтры, передавая информацию о том, является ли это запросом партнёра
+    this.applyFilters(queryBuilder, filters, !!partner_id);
     this.applySorting(queryBuilder, filters);
 
     const total = await queryBuilder.getCount();
@@ -116,6 +138,9 @@ export class ToursService {
     queryBuilder.skip(offset).take(limit);
 
     const tours = await queryBuilder.getMany();
+    
+    console.log('Found tours count:', tours.length);
+    console.log('Tours found:', tours.map(t => ({ id: t.id, title: t.title, partner_id: t.partner_id, status: t.status })));
 
     // --- Пересчёт цен в нужную валюту ---
     let resultTours: any[] = tours;
@@ -142,20 +167,63 @@ export class ToursService {
     };
   }
 
-  private applyFilters(queryBuilder: SelectQueryBuilder<Tour>, filters?: TourFiltersDto): void {
+  private applyFilters(queryBuilder: SelectQueryBuilder<Tour>, filters?: TourFiltersDto, isPartnerRequest: boolean = false): void {
     if (!filters) return;
 
     if (filters.city && filters.city.length > 0) {
-      queryBuilder.andWhere(
-        `EXISTS (SELECT 1 FROM unnest(tour.city) AS c WHERE c = ANY(:cities))`,
-        { cities: filters.city }
-      );
+      // Принудительно преобразуем в массив, если это строка
+      const cities = Array.isArray(filters.city) ? filters.city : [filters.city];
+      const cityConditions = cities.map((city, index) => 
+        `'${city}' = ANY(tour.city)`
+      ).join(' OR ');
+      queryBuilder.andWhere(`(${cityConditions})`);
     }
 
     if (filters.date) {
+      const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+      const currentTime = moment().tz('Asia/Tashkent').format('HH:mm:ss');
+      // SQL выражение для приведения даты к ISO-формату
+      const dateExpr = `CASE WHEN availability_item->>'date' ~ '^\\d{2}\\.\\d{2}\\.\\d{4}$' THEN to_char(to_date(availability_item->>'date', 'DD.MM.YYYY'), 'YYYY-MM-DD') ELSE availability_item->>'date' END`;
+      // Проверяем, что запрашиваемая дата не в прошлом
+      if (filters.date < today) {
+        queryBuilder.andWhere('1 = 0'); // Всегда false
+      } else if (filters.date === today) {
+        queryBuilder.andWhere(
+          `EXISTS (SELECT 1 FROM jsonb_array_elements(tour.availability) AS availability_item WHERE ${dateExpr} = :date)`,
+          { date: filters.date }
+        );
+        queryBuilder.andWhere('(tour.departure_time IS NULL OR tour.departure_time > :currentTime)', { currentTime });
+      } else {
+        queryBuilder.andWhere(
+          `EXISTS (SELECT 1 FROM jsonb_array_elements(tour.availability) AS availability_item WHERE ${dateExpr} = :date)`,
+          { date: filters.date }
+        );
+      }
+    }
+
+    // Фильтрация по датам - исключаем туры с прошедшими датами и проверяем departure_time
+    // НО ТОЛЬКО ДЛЯ ОБЫЧНЫХ ПОЛЬЗОВАТЕЛЕЙ, НЕ ДЛЯ ПАРТНЁРОВ
+    if (!isPartnerRequest) {
+      const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+      const currentTime = moment().tz('Asia/Tashkent').format('HH:mm:ss');
+
+      // SQL выражение для приведения даты к ISO-формату
+      const dateExpr = `CASE WHEN availability_item->>'date' ~ '^\\d{2}\\.\\d{2}\\.\\d{4}$' THEN to_char(to_date(availability_item->>'date', 'DD.MM.YYYY'), 'YYYY-MM-DD') ELSE availability_item->>'date' END`;
+
       queryBuilder.andWhere(
-        'EXISTS (SELECT 1 FROM jsonb_array_elements(tour.availability) AS availability_item WHERE availability_item->>\'date\' = :date)',
-        { date: filters.date }
+        `EXISTS (
+          SELECT 1 FROM jsonb_array_elements(tour.availability) AS availability_item 
+          WHERE ${dateExpr} >= :today 
+          AND (availability_item->>'available_slots')::int > 0
+          AND (
+            ${dateExpr} > :today 
+            OR (
+              ${dateExpr} = :today 
+              AND (tour.departure_time IS NULL OR tour.departure_time > :currentTime)
+            )
+          )
+        )`,
+        { today, currentTime }
       );
     }
 
@@ -163,24 +231,14 @@ export class ToursService {
       queryBuilder.andWhere('tour.type = :type', { type: filters.type });
     }
 
+    // Фильтрация по языкам
     if (filters.languages && filters.languages.length > 0) {
-      const languageConditions = filters.languages.map((_, index) => 
-        `EXISTS (SELECT 1 FROM unnest(tour.languages) AS lang WHERE lang = :lang${index})`
-      ).join(' AND ');
-      
-      const languageParams = filters.languages.reduce((acc, lang, index) => {
-        acc[`lang${index}`] = lang;
-        return acc;
-      }, {} as Record<string, string>);
-
-      queryBuilder.andWhere(`(${languageConditions})`, languageParams);
-    }
-
-    if (filters.minPrice !== undefined) {
-      queryBuilder.andWhere('tour.price >= :minPrice', { minPrice: filters.minPrice });
-    }
-    if (filters.maxPrice !== undefined) {
-      queryBuilder.andWhere('tour.price <= :maxPrice', { maxPrice: filters.maxPrice });
+      // Принудительно преобразуем в массив, если это строка
+      const languages = Array.isArray(filters.languages) ? filters.languages : [filters.languages];
+      const languageConditions = languages.map((lang) => 
+        `'${lang}' = ANY(tour.languages)`
+      ).join(' OR ');
+      queryBuilder.andWhere(`(${languageConditions})`);
     }
 
     if (filters.minDuration !== undefined) {
@@ -246,9 +304,29 @@ export class ToursService {
     if (tour.partner_id !== partner.id) {
       throw new ForbiddenException('You can only update your own tours');
     }
-    
-    // Если не указана currency, сохраняем USD по умолчанию
-    const updateData = { ...updateTourDto };
+
+    // Проверка на дубли дат в availability (только внутри нового массива)
+    if (updateTourDto.availability) {
+      const seenDates = new Set();
+      for (const item of updateTourDto.availability) {
+        let itemDateISO = item.date;
+        if (/^\d{2}\.\d{2}\.\d{4}$/.test(item.date)) {
+          const [day, month, year] = item.date.split('.');
+          itemDateISO = `${year}-${month}-${day}`;
+        }
+        if (seenDates.has(itemDateISO)) {
+          throw new BadRequestException(`Duplicate date found in availability: ${item.date}`);
+        }
+        seenDates.add(itemDateISO);
+      }
+    }
+
+    // Синхронизируем available_dates с availability
+    const availability = updateTourDto.availability ?? [];
+    const available_dates = availability.map(item => item.date).filter(Boolean);
+
+    // Полностью заменяем availability новым массивом
+    const updateData = { ...updateTourDto, available_dates, availability };
     if (updateData.currency === undefined) {
       updateData.currency = 'USD';
     }
@@ -279,7 +357,10 @@ export class ToursService {
       }
     }
     
-    await this.tourRepository.update(id, { availability });
+    // Синхронизируем available_dates с availability
+    const available_dates = availability.map(item => item.date).filter(Boolean);
+    
+    await this.tourRepository.update(id, { availability, available_dates });
     return this.findOne(id);
   }
 
@@ -300,7 +381,10 @@ export class ToursService {
       }
     }
     
-    await this.tourRepository.update(id, { availability });
+    // Синхронизируем available_dates с availability
+    const available_dates = availability.map(item => item.date).filter(Boolean);
+    
+    await this.tourRepository.update(id, { availability, available_dates });
     return this.findOne(id);
   }
 
@@ -380,5 +464,81 @@ export class ToursService {
     const priceInTarget = priceInUZS / toRate;
 
     return { price: priceInTarget, currency: targetCurrency };
+  }
+
+  /**
+   * Очищает прошедшие даты из доступности туров
+   * Этот метод можно вызывать по расписанию или при запросах
+   */
+  async cleanupExpiredDates(): Promise<void> {
+    const today = new Date().toISOString().split('T')[0];
+    
+    // Получаем все туры с прошедшими датами
+    const toursWithExpiredDates = await this.tourRepository
+      .createQueryBuilder('tour')
+      .where('tour.availability IS NOT NULL')
+      .andWhere('tour.availability != \'[]\'::jsonb')
+      .getMany();
+
+    for (const tour of toursWithExpiredDates) {
+      if (tour.availability && Array.isArray(tour.availability)) {
+        // Фильтруем только будущие даты
+        const validAvailability = tour.availability.filter(item => {
+          if (item && item.date) {
+            // Преобразуем дату к ISO-формату (YYYY-MM-DD), если она в формате DD.MM.YYYY
+            let itemDateISO = item.date;
+            if (/^\d{2}\.\d{2}\.\d{4}$/.test(item.date)) {
+              const [day, month, year] = item.date.split('.');
+              itemDateISO = `${year}-${month}-${day}`;
+            }
+            return itemDateISO >= today;
+          }
+          return false;
+        });
+
+        // Обновляем тур только если есть изменения
+        if (validAvailability.length !== tour.availability.length) {
+          // Синхронизируем available_dates с отфильтрованной availability
+          const available_dates = validAvailability.map(item => item.date).filter(Boolean);
+          await this.tourRepository.update(tour.id, { availability: validAvailability, available_dates });
+        }
+      }
+    }
+  }
+
+  /**
+   * Проверяет доступность тура на конкретную дату
+   */
+  async checkTourAvailability(tourId: string, date: string): Promise<{ available: boolean; availableSlots: number; totalSlots: number }> {
+    const tour = await this.tourRepository.findOne({ where: { id: tourId } });
+    if (!tour) throw new NotFoundException('Tour not found');
+
+    const today = new Date().toISOString().split('T')[0];
+    const currentTime = moment().tz('Asia/Tashkent').format('HH:mm:ss');
+    
+    // Проверяем, что дата не в прошлом
+    if (date < today) {
+      return { available: false, availableSlots: 0, totalSlots: 0 };
+    }
+
+    // Если дата сегодня, проверяем departure_time
+    if (date === today && tour.departure_time) {
+      if (tour.departure_time <= currentTime) {
+        return { available: false, availableSlots: 0, totalSlots: 0 };
+      }
+    }
+
+    if (tour.availability && Array.isArray(tour.availability)) {
+      const availabilityItem = tour.availability.find(item => item.date === date);
+      if (availabilityItem) {
+        return {
+          available: availabilityItem.available_slots > 0,
+          availableSlots: availabilityItem.available_slots,
+          totalSlots: availabilityItem.total_slots
+        };
+      }
+    }
+
+    return { available: false, availableSlots: 0, totalSlots: 0 };
   }
 }

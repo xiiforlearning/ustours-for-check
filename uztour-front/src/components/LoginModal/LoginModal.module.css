@@ -236,7 +236,6 @@
 
 .guideFormModal{
     width: 672px;
-    height: 486px;
 }
 .guideText{
     color: #848484;
@@ -250,6 +249,7 @@
     gap: 12px;
     margin-top: 12px;
     flex-wrap: wrap;
+    margin-bottom: 20px;
 }
 .area{
     width: calc(50% - 6.5px);

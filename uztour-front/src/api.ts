@@ -1,6 +1,7 @@
 import { API } from "./http-client";
 import { ErrorResponse, ResponseTour, TourType, UserType } from "./types";
 import { Locale } from "./i18n-config";
+import { cache } from "react";
 const YANDEX = "AIzaSyBnjwmO6DLPoSChny0l-4yeJRoViEbbdhw";
 type FullLocaleCode = "en-US" | "ru-RU" | "uz-UZ" | "zh-CN";
 const languageMap = new Map<Locale, FullLocaleCode>([
@@ -114,6 +115,11 @@ export const createTour = async ({
   availability,
   programsList,
   isSubmit,
+  active,
+  departure_address,
+  departure_landmark,
+  departure_lat,
+  departure_lng,
 }: {
   data: TourType;
   id?: string;
@@ -123,64 +129,76 @@ export const createTour = async ({
     available_slots: string;
   }[];
   programsList: {
-    title: string;
     description: string;
     photos: string[];
   }[];
   isSubmit?: boolean;
+  active?: boolean;
+  departure_address: string;
+  departure_landmark: string;
+  departure_lat: number;
+  departure_lng: number;
 }) => {
   if (!id) {
     const response = await API.post<{ id: string }>(`/tours`, {
-      title: data.title,
+      title: data?.title,
       status: isSubmit ? "moderation" : "not_complete",
-      main_photo: data.poster,
-      photos: data.gallery,
-      city: data.cities,
-      duration: data.duration ? data.duration : null,
-      duration_unit: data.duration_unit,
-      type: data.type,
-      difficulty: data.difficulty,
-      departure_city: data.departure_city,
-      departure_time: data.departure_time,
-      price: data.price ? data.price : null,
-      child_price: data.child_price ? data.child_price : null,
-      languages: data.languages,
+      main_photo: data?.poster,
+      photos: data?.gallery,
+      city: data?.cities,
+      duration: data?.duration ? data.duration : null,
+      duration_unit: data?.duration_unit,
+      type: data?.type,
+      difficulty: data?.difficulty,
+      departure_city: data?.departure_city,
+      departure_time: data?.departure_time,
+      price: data?.type === "group" ? data?.price : data?.whole_price,
+      child_price: data?.type === "group" ? data?.child_price : 0,
+      group_price: data?.type !== "group" ? data?.whole_price : 0,
+      languages: data?.languages,
       availability,
       days: programsList,
-      included: data.included,
-      excluded: data.excluded,
-      description: data.description,
-      departure_address: data.address,
-      departure_landmark: data.orientation,
-      departure_lat: data.selectedCordinates[0],
-      departure_lng: data.selectedCordinates[1],
+      included: data?.included,
+      excluded: data?.excluded,
+      description: data?.description,
+      departure_address: departure_address,
+      departure_landmark: departure_landmark,
+      departure_lat: departure_lat,
+      departure_lng: departure_lng,
+      max_persons: data?.max_persons,
+      min_persons: data?.min_persons,
+      // data: data?.category,
     });
     return response.data;
   } else {
     const response = await API.patch<{ id: string }>(`/tours/` + id, {
-      title: data.title,
-      status: isSubmit ? "moderation" : "not_complete",
-      main_photo: data.poster,
-      photos: data.gallery,
-      city: data.cities,
-      duration: data.duration ? data.duration : null,
-      duration_unit: data.duration_unit,
-      type: data.type,
-      difficulty: data.difficulty,
-      departure_city: data.departure_city,
-      departure_time: data.departure_time,
-      price: data.price ? data.price : null,
-      child_price: data.child_price ? data.child_price : null,
-      languages: data.languages,
+      title: data?.title,
+      status: isSubmit ? "moderation" : active ? "active" : "not_complete",
+      main_photo: data?.poster,
+      photos: data?.gallery,
+      city: data?.cities,
+      duration: data?.duration ? data.duration : null,
+      duration_unit: data?.duration_unit,
+      type: data?.type,
+      difficulty: data?.difficulty,
+      departure_city: data?.departure_city,
+      departure_time: data?.departure_time,
+      price: data?.type === "group" ? data?.price : data?.whole_price,
+      child_price: data?.type === "group" ? data?.child_price : 0,
+      group_price: data?.type !== "group" ? data?.whole_price : 0,
+      languages: data?.languages,
       availability,
       days: programsList,
-      included: data.included,
-      excluded: data.excluded,
-      description: data.description,
-      departure_address: data.address,
-      departure_landmark: data.orientation,
-      departure_lat: data.selectedCordinates[0],
-      departure_lng: data.selectedCordinates[1],
+      included: data?.included,
+      excluded: data?.excluded,
+      description: data?.description,
+      departure_address: departure_address,
+      departure_landmark: departure_landmark,
+      departure_lat: departure_lat,
+      departure_lng: departure_lng,
+      max_persons: data?.max_persons,
+      min_persons: data?.min_persons,
+      // category:data?.category
     });
     return response.data;
   }
@@ -189,29 +207,64 @@ export const createTour = async ({
 export const getTours = async ({
   partner_id = undefined,
   limit,
+  sortOrder,
   page,
-}: {
+  city,
+  date,
+  type,
+  minPrice,
+  maxPrice,
+  languages,
+  minDuration,
+  maxDuration,
+}: // city,
+// page,
+// city,
+// date,
+// type,
+// sortBy,
+{
   partner_id?: string;
   limit?: number;
   page?: number;
+  city?: string;
+  date?: string;
+  type?: string;
+  sortBy?: "created_at" | "popularity";
+  sortOrder?: "ASC" | "DESC";
+  minPrice?: number;
+  maxPrice?: number;
+  languages?: string;
+  minDuration?: number;
+  maxDuration?: number;
 }) => {
   const response = await API.get<{
     tours: ResponseTour[];
     total: number;
+    totalPages: number;
   }>(`/tours`, {
     params: {
       partner_id,
       limit,
+      sortOrder,
       page,
+      city,
+      date,
+      type: type ? (type == "individual" ? "private" : "group") : undefined,
+      minPrice,
+      maxPrice,
+      languages: languages,
+      minDuration,
+      maxDuration,
     },
   });
   return response.data;
 };
 
-export const getExactTours = async ({ id }: { id: string }) => {
+export const getExactTours = cache(async ({ id }: { id: string }) => {
   const response = await API.get<ResponseTour>(`/tours/${id}`);
   return response.data;
-};
+});
 
 export async function geocodeAddress(address: string) {
   const url = `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(
@@ -240,28 +293,37 @@ export async function createBooking({
   childrenCount,
   whatsapp,
   telegram,
+  isGroup,
 }: {
   tourId: string;
   date: string;
   name: string;
-  phone: string;
+  phone: string | null;
   email: string;
   adultsCount: number;
-  whatsapp: string;
-  childrenCount: number;
-  telegram: string;
+  whatsapp: string | null;
+  childrenCount: number | null;
+  telegram: string | null;
+  isGroup: boolean;
 }) {
   const response = await API.post<{ message: string }>(`/bookings`, {
-    tour_id: tourId,
+    tourId: tourId,
     tourDate: date,
     adultsCount: adultsCount,
     childrenCount: childrenCount,
     contactFullname: name,
     whatsapp: whatsapp,
     telegram: telegram,
-    contactPhone: phone,
+    contactPhone: phone ? "+" + phone : null,
     contactEmail: email,
-    currencyCode: "USD",
+    isGroup: isGroup,
   });
   return response.data;
 }
+
+export const getBooking = async () => {
+  const response = await API.get(`/bookings`, {
+    params: {},
+  });
+  return response.data;
+};

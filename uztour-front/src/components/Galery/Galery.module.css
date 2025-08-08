@@ -22,6 +22,7 @@
 .photo{
     width: calc(50% - 2px);
     object-fit: cover;
+    height: 50%;
 }
 .grid2{
     flex-direction: column;
@@ -35,4 +36,20 @@
 .mainImage2{
     width: calc(60% - 2px);
     height: 100%;
+}
+
+@media (max-width:600px) {
+    .container{
+        flex-direction: column;
+        aspect-ratio: unset;
+        
+    }
+    .mainImage{
+        width: 100%;
+        aspect-ratio: 350/200;
+    }
+    .photo{
+        height: auto;
+    }
+    
 }

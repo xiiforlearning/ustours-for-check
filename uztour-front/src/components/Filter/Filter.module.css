@@ -10,3 +10,6 @@
     display: flex;
     flex-wrap: wrap;
 }
+.price{
+    min-width: 130px;
+}

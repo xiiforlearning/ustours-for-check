@@ -92,7 +92,9 @@ function BookingTourInfo({
                 />
               </svg>
 
-              <p className={classes.featureText}>{dict["guide"]}: Абдулазиз</p>
+              <p className={classes.featureText}>
+                {dict["guide"]}: {currentExcursion.partner.firstName}
+              </p>
             </div>
             <div className={classes.feature}>
               <svg

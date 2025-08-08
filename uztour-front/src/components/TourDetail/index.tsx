@@ -1,48 +1,27 @@
-"use client";
 import Link from "next/link";
 import classes from "./TourDetail.module.css";
 import { Dict, ResponseTour } from "@/types";
 import { Locale } from "@/i18n-config";
-import { useEffect, useState } from "react";
 import Galery from "../Galery";
 import TourInfo from "../TourInfo";
 import GuideCard from "../GuideCard";
 import Detailed from "../DetailedInfo";
 import Booking from "../Booking";
-import useStore from "@/store/useStore";
-import { excursions } from "@/consts";
-import { getExactTours } from "@/api";
+import BackBtn from "./BackBtn";
+import Inclusions from "../Inclusions";
 
 function TourDetail({
   dict,
   lang,
-  slug,
+  res,
 }: {
   dict: Dict;
   lang: Locale;
-  slug: string;
+  res: ResponseTour;
 }) {
-  const [data, setData] = useState<ResponseTour>();
-  const isPrudiction = useStore((state) => state.isProduction);
-
-  useEffect(() => {
-    async function load() {
-      if (isPrudiction) {
-        const res = await getExactTours({ id: slug });
-        setData(res);
-      } else {
-        const currentExcursion = excursions.find(
-          (excursion) => excursion.id == slug
-        );
-        setData(currentExcursion);
-      }
-    }
-    load();
-  }, [slug, isPrudiction]);
-
   //   const getGuide = async ({ id }: { id: string }) => {};
 
-  if (!data) {
+  if (!res) {
     return null;
   }
 
@@ -80,25 +59,11 @@ function TourDetail({
               fill="#242D3F"
             />
           </svg>
-          <p className={classes.headerTitle}>{data.title}</p>
+          <p className={classes.headerTitle}>{res.title}</p>
         </div>
-        <Link href="/tours" className={classes.back}>
-          <svg
-            width="15"
-            height="16"
-            viewBox="0 0 15 16"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M9.63223 10.8625L6.76973 8L9.63223 5.13125L8.75098 4.25L5.00098 8L8.75098 11.75L9.63223 10.8625Z"
-              fill="#242D3F"
-            />
-          </svg>
-          <p className={classes.backText}>{dict["booking.back"]}</p>
-        </Link>
-        <h2 className={classes.title}>{data.title}</h2>
-        {data.rating && (
+        <BackBtn dict={dict} />
+        <h2 className={classes.title}>{res.title}</h2>
+        {res.rating && (
           <div className={classes.ratingContent}>
             <div className={classes.ratingValue}>
               <svg
@@ -113,22 +78,27 @@ function TourDetail({
                   fill="#F4BC32"
                 />
               </svg>
-              <p className={classes.rating}>{data.rating}</p>
+              <p className={classes.rating}>{res.rating}</p>
             </div>
             <div className={classes.dott}></div>
             <p className={classes.rating}>
-              {data.rating_count} {dict["marks"]}
+              {res.rating_count} {dict["marks"]}
             </p>
           </div>
         )}
-        <Galery mainImage={data.main_photo} images={data.photos} />
+        <Galery mainImage={res.main_photo} images={res.photos} />
         <div className={classes.mainInfo}>
-          <TourInfo currentExcursion={data} dict={dict} />
-          <GuideCard lang={lang} currentExcursion={data} dict={dict} />
+          <TourInfo currentExcursion={res} dict={dict} />
+          <div style={{ flex: 1 }}>
+            <GuideCard lang={lang} currentExcursion={res} dict={dict} />
+            <Booking lang={lang} dict={dict} currentExcursion={res} />
+          </div>
         </div>
         <div className={classes.additional}>
-          <Detailed dict={dict} currentExcursion={data} lang={lang} />
-          <Booking lang={lang} dict={dict} currentExcursion={data} />
+          <div className={classes.detailed}>
+            <Detailed dict={dict} currentExcursion={res} lang={lang} />
+            <Inclusions dict={dict} currentExcursion={res} />
+          </div>
         </div>
       </div>
     </div>

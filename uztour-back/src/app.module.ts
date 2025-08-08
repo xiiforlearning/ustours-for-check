@@ -13,6 +13,7 @@ import { FilesModule } from './files/files.module';
 import { SchedulerModule } from './scheduler/scheduler.module';
 import { ScheduleModule } from '@nestjs/schedule';
 import { CurrencyModule } from './currency/currency.module';
+import { TelegramModule } from './telegram/telegram.module';
 
 @Module({
   imports: [
@@ -60,6 +61,7 @@ import { CurrencyModule } from './currency/currency.module';
     SchedulerModule,
     ScheduleModule.forRoot(),
     CurrencyModule,
+    TelegramModule,
   ],
   controllers: [AppController],
   providers: [AppService],

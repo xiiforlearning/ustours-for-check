@@ -3,10 +3,21 @@ import { Dict, UserType } from "@/types";
 import classes from "./Header.module.css";
 import { useEffect, useRef, useState } from "react";
 import useStore from "@/store/useStore";
-function Profile({ user, dict }: { user: UserType; dict: Dict }) {
+// import Link from "next/link";
+import { Locale } from "@/i18n-config";
+function Profile({
+  user,
+  dict,
+  lang,
+}: {
+  user: UserType;
+  dict: Dict;
+  lang: Locale;
+}) {
   const setUser = useStore((state) => state.setUser);
   const [open, setOpen] = useState(false); // 1️⃣  menu‑open state
   const wrapperRef = useRef<HTMLDivElement>(null); // for outside‑click close
+  lang;
 
   // 2️⃣  close the menu when you click anywhere else
   useEffect(() => {
@@ -42,7 +53,10 @@ function Profile({ user, dict }: { user: UserType; dict: Dict }) {
       </p>
       {open && (
         <div className={classes.menu}>
-          <div className={classes.menuItem}>
+          {/* <Link
+            href={"/" + lang + "/user-bookings"}
+            className={classes.menuItem}
+          >
             <svg
               width="21"
               height="20"
@@ -56,7 +70,7 @@ function Profile({ user, dict }: { user: UserType; dict: Dict }) {
               />
             </svg>
             <p className={classes.menuItemText}>{dict["yourTours"]}</p>
-          </div>
+          </Link>
           <div className={classes.menuItemBorder}>
             <svg
               width="21"
@@ -84,7 +98,7 @@ function Profile({ user, dict }: { user: UserType; dict: Dict }) {
             </svg>
 
             <p className={classes.menuItemText}>{dict["header.transfer"]}</p>
-          </div>
+          </div> */}
           <div onClick={logout} className={classes.menuItem}>
             <svg
               width="21"

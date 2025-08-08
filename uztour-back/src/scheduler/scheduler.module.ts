@@ -6,6 +6,7 @@ import { SchedulerService } from './scheduler.service';
 import { BookingExpirationProcessor } from './booking-expiration.processor';
 import { SchedulerController } from './scheduler.controller';
 import { BookingsModule } from '../bookings/bookings.module';
+import { ToursModule } from '../tours/tours.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { BookingsModule } from '../bookings/bookings.module';
       name: 'booking-expiration',
     }),
     forwardRef(() => BookingsModule),
+    forwardRef(() => ToursModule),
   ],
   controllers: [SchedulerController],
   providers: [SchedulerService, BookingExpirationProcessor],

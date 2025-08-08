@@ -1,149 +1,203 @@
 "use client";
 import { cities, langs, listType } from "@/consts";
-import Select from "../ui/Select";
 import classes from "./Filter.module.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Dict } from "@/types";
+import { useRouter, useSearchParams } from "next/navigation";
+import Select, { SingleValue } from "react-select";
+
+interface FilterOption {
+  value: string;
+  label: string;
+  min?: number;
+  max?: number;
+}
+
+interface FilterData {
+  city: string;
+  type: string;
+  languages: string;
+  price: string;
+  duration: string;
+  sort: string;
+}
 
 function Filter({ dict }: { dict: Dict }) {
-  const [filterData, setFilterData] = useState({
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [filterData, setFilterData] = useState<FilterData>({
     city: "",
     type: "",
-    lang: "",
+    languages: "",
     price: "",
     duration: "",
     sort: "",
   });
+
+  // Filter options
   const listCity = ["city", ...cities];
-  //@ts-expect-error aaa
-  const listLanguage = langs.map((lang) => dict[lang]);
   const listPrice = [
-    dict["price"],
-    "0 - 100 USD",
-    "100-400 USD",
-    dict["from2"] + " 400 USD",
+    { label: dict["price"] || "Price", value: "", min: 0, max: 0 },
+    { label: "0 - 35 USD", value: "0-35", min: 0, max: 35 },
+    { label: "35-70 USD", value: "35-70", min: 35, max: 70 },
+    { label: "70-120 USD", value: "70-120", min: 70, max: 120 },
+    { label: `${dict["from2"] || "From"} 120 USD`, value: "120+", min: 120 },
   ];
   const listDuration = [
-    dict["duration"],
-    "0-5 " + dict["hour"],
-    dict["fullDay"],
-    "2 " + dict["day"],
-    "3 " + dict["day"],
-    "4 " + dict["day"],
-    "5 " + dict["day"],
-    "6 " + dict["day"],
-    "7 " + dict["day"],
-    "8 " + dict["day2"],
-    "9 " + dict["day2"],
-    "10 " + dict["day2"],
-    "11 " + dict["day2"],
-    "12 " + dict["day2"],
+    { label: dict["duration"] || "Duration", value: "" },
+    { label: `0-5 ${dict["hour"] || "hours"}`, value: "0-5" },
+    { label: `5-12` + " " + dict["hour"] || "hours", value: "5-12" },
+    ...Array.from({ length: 1 }, (_, i) => ({
+      label: `${i + 2} ${dict["day"] || "days"}`,
+      value: `${i + 2}`,
+    })),
   ];
-  const listSort = [
-    dict["sort"],
-    dict["fromPopular"],
-    dict["fromCheap"],
-    dict["fromExpensive"],
-  ];
+  // const listSort = [
+  //   { label: dict["sort"] || "Sort", value: "" },
+  //   { label: dict["fromPopular"] || "Popular", value: "popular" },
+  //   { label: dict["fromCheap"] || "Price: Low to High", value: "price-asc" },
+  //   {
+  //     label: dict["fromExpensive"] || "Price: High to Low",
+  //     value: "price-desc",
+  //   },
+  // ];
+  const langsList = ["lang", ...langs];
+
+  // Initialize filters from URL params
+  useEffect(() => {
+    const params = Object.fromEntries(searchParams.entries());
+    setFilterData({
+      city: params.city || "",
+      type: params.type || "",
+      languages: params.languages || "",
+      price: params.price || "",
+      duration: params.duration || "",
+      sort: params.sort || "",
+    });
+  }, [searchParams]);
+
+  // Update URL when filters change
+  const updateUrlParams = (newFilters: Partial<FilterData>) => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    // Update or delete each filter parameter
+    Object.entries(newFilters).forEach(([key, value]) => {
+      if (value) {
+        params.set(key, value);
+      } else {
+        params.delete(key);
+      }
+    });
+
+    // Reset pagination when filters change
+    params.delete("page");
+
+    router.push(`?${params.toString()}`);
+  };
+
+  // Handle filter changes
+  const handleFilterChange = (
+    key: keyof FilterData,
+    value: string,
+    defaultValue = ""
+  ) => {
+    const newValue = value !== defaultValue ? value : "";
+    setFilterData((prev) => ({ ...prev, [key]: newValue }));
+    updateUrlParams({ [key]: newValue });
+  };
+
+  // @ts-expect-error aaa
+  const getLabel = (key: string) => dict[key] || key;
+
+  // Current selected values
+  const selectedCity = filterData.city || listCity[0];
+  const selectedType = filterData.type || listType[0];
+  const selectedLang = filterData.languages || langsList[0];
+  const selectedPrice =
+    listPrice.find((p) => p.value === filterData.price) || listPrice[0];
+  const selectedDuration =
+    listDuration.find((d) => d.value === filterData.duration) ||
+    listDuration[0];
+  // const selectedSort =
+  //   listSort.find((s) => s.value === filterData.sort) || listSort[0];
 
   return (
     <div className={classes.container}>
       <div className={classes.left}>
+        {/* City Filter */}
         <Select
-          white
-          value={filterData.city ? filterData.city : listCity[0]}
-          //@ts-expect-error aaa
-          options={listCity.map((city) => dict[city])}
-          contain={true}
-          setValue={(value) =>
-            value != listCity[0]
-              ? setFilterData({ ...filterData, city: value })
-              : setFilterData({ ...filterData, city: "" })
+          options={listCity.map((city) => ({
+            value: city,
+            label: getLabel(city),
+          }))}
+          value={{ value: selectedCity, label: getLabel(selectedCity) }}
+          onChange={(selected: SingleValue<FilterOption>) =>
+            selected && handleFilterChange("city", selected.value, listCity[0])
           }
-        />
-        <Select
-          white
-          value={filterData.type ? filterData.type : listType[0]}
-          options={listType.map(
-            //@ts-expect-error aaa
-            (type) => dict[type].charAt(0).toUpperCase() + dict[type].slice(1)
-          )}
-          contain={true}
-          setValue={(value) =>
-            value != listType[0]
-              ? setFilterData({ ...filterData, type: value })
-              : setFilterData({ ...filterData, type: "" })
-          }
-        />
-        <Select
-          white
-          value={filterData.lang ? filterData.lang : listLanguage[0]}
-          options={listLanguage}
-          contain={true}
-          setValue={(value) =>
-            value != listLanguage[0]
-              ? setFilterData({ ...filterData, lang: value })
-              : setFilterData({ ...filterData, lang: "" })
-          }
+          placeholder={dict["city"] || "City"}
         />
 
+        {/* Type Filter */}
         <Select
-          white
-          value={filterData.price ? filterData.price : listPrice[0]}
-          options={listPrice}
-          contain={true}
-          setValue={(value) =>
-            value != listPrice[0]
-              ? setFilterData({ ...filterData, price: value })
-              : setFilterData({ ...filterData, price: "" })
+          options={listType.map((type) => ({
+            value: type,
+            label: getLabel(type),
+          }))}
+          value={{ value: selectedType, label: getLabel(selectedType) }}
+          onChange={(selected: SingleValue<FilterOption>) =>
+            selected && handleFilterChange("type", selected.value, listType[0])
           }
+          // @ts-expect-error aaa
+          placeholder={dict["type"] || "Type"}
+        />
+
+        {/* Language Filter */}
+        <Select
+          options={langsList.map((lang) => ({
+            value: lang,
+            label: getLabel(lang),
+          }))}
+          className={classes.price}
+          value={{ value: selectedLang, label: getLabel(selectedLang) }}
+          onChange={(selected: SingleValue<FilterOption>) =>
+            selected &&
+            handleFilterChange("languages", selected.value, langsList[0])
+          }
+          placeholder={dict["lang"] || "Language"}
+        />
+
+        {/* Price Filter */}
+        <Select
+          options={listPrice}
+          value={selectedPrice}
+          onChange={(selected: SingleValue<FilterOption>) =>
+            selected && handleFilterChange("price", selected.value, "")
+          }
+          className={classes.price}
+          placeholder={dict["price"] || "Price"}
         />
         <Select
-          white
-          value={filterData.duration ? filterData.duration : listDuration[0]}
           options={listDuration}
-          contain={true}
-          setValue={(value) =>
-            value != listDuration[0]
-              ? setFilterData({ ...filterData, duration: value })
-              : setFilterData({ ...filterData, duration: "" })
+          value={selectedDuration}
+          onChange={(selected: SingleValue<FilterOption>) =>
+            selected && handleFilterChange("duration", selected.value, "")
           }
+          placeholder={dict["duration"] || "Duration"}
         />
       </div>
+
       <div className={classes.right}>
-        <Select
-          white
-          value={filterData.sort ? filterData.sort : listSort[0]}
+        {/* Duration Filter */}
+
+        {/* Sort Filter */}
+        {/* <Select
           options={listSort}
-          svg={
-            <svg
-              width="13"
-              height="12"
-              style={{
-                position: "absolute",
-                left: "10px",
-                top: "0px",
-                bottom: "0px",
-                marginTop: "auto",
-                marginBottom: "auto",
-              }}
-              viewBox="0 0 13 12"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <path
-                d="M10.875 2.875H12.75L10.25 0.375L7.75 2.875H9.625V11.625H10.875V2.875ZM0.25 9.125H6.5V10.375H0.25V9.125ZM2.75 1.625V2.875H0.25V1.625H2.75ZM0.25 5.375H4.625V6.625H0.25V5.375Z"
-                fill="#242D3F"
-              />
-            </svg>
+          value={selectedSort}
+          onChange={(selected: SingleValue<FilterOption>) =>
+            selected && handleFilterChange("sort", selected.value, "")
           }
-          contain={true}
-          setValue={(value) =>
-            value != listSort[0]
-              ? setFilterData({ ...filterData, sort: value })
-              : setFilterData({ ...filterData, sort: "" })
-          }
-        />
+          placeholder={dict["sort"] || "Sort"}
+        /> */}
       </div>
     </div>
   );

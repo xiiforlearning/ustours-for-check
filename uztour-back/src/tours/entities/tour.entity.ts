@@ -41,7 +41,7 @@ export class Tour {
   @Column('uuid')
   partner_id!: string;
 
-  @Column({ length: 100 })
+  @Column('text')
   title!: string;
 
   @Column('text', { array: true, nullable: true, default: [] })
@@ -56,7 +56,7 @@ export class Tour {
   @Column({ type: 'float', nullable: true })
   rating?: number;
 
-  @Column({ length: 700, nullable: true })
+  @Column('text', { nullable: true })
   description?: string;
 
   @Column('int', { nullable: true })
@@ -79,6 +79,9 @@ export class Tour {
 
   @Column('float', { nullable: true })
   price?: number;
+
+  @Column('float', { nullable: true })
+  group_price?: number;
 
   @Column({ nullable: true })
   currency?: string;
@@ -113,10 +116,10 @@ export class Tour {
   @Column('text', { array: true, nullable: true, default: [] })
   available_dates!: string[];
 
-  @Column({ length: 255, nullable: true })
+  @Column('text', { nullable: true })
   main_photo?: string;
 
-  @Column({ length: 100, nullable: true })
+  @Column('text', { nullable: true })
   departure_city?: string;
 
   @Column('jsonb', { nullable: true, default: [] })

@@ -110,20 +110,31 @@ function getOtpEmailTemplate(code: string, lang: 'ru' | 'en' | 'uz' | 'zh' = 'ru
   return {
     subject: texts.subject,
     html: `
-      <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 12px #0001; padding: 32px 24px;">
-        <div style="text-align: center; margin-bottom: 24px;">
-          <h2 style="color: #328AEE; margin: 0; font-size: 28px; letter-spacing: 1px;">UzTours</h2>
-        </div>
-        <p style="font-size: 16px; color: #222; margin-bottom: 16px;">${texts.hello}</p>
-        <p style="font-size: 16px; color: #222; margin-bottom: 16px;">${texts.yourCode}</p>
-        <div style="background: #f4f8fb; border-radius: 8px; padding: 24px; text-align: center; margin: 24px 0;">
-          <span style="color: #328AEE; font-size: 40px; font-weight: bold; letter-spacing: 8px;">${code}</span>
-        </div>
-        <p style="font-size: 15px; color: #555; margin-bottom: 8px;">${texts.valid}</p>
-        <p style="font-size: 13px; color: #888; margin-bottom: 0;">${texts.ignore}</p>
-        <hr style="margin: 32px 0 16px 0; border: none; border-top: 1px solid #eee;">
-        <div style="text-align: center; color: #bbb; font-size: 12px;">${texts.auto}</div>
-      </div>
+      <table width="100%" bgcolor="#f4f4f4" cellpadding="0" cellspacing="0" border="0" style="width:100%!important;background:#f4f4f4;">
+        <tr>
+          <td align="center">
+            <table width="480" cellpadding="0" cellspacing="0" border="0" style="background:#fff;border-radius:12px;width:480px;max-width:100%; margin: 20px auto;">
+              <tr>
+                <td style="padding:32px 24px;">
+                  <div style="text-align:center;margin-bottom:24px;">
+                    <img src="https://res.cloudinary.com/dljqyrx71/image/upload/v1752932390/uploads/hr3c6zmugbjg1g4l6xbg.png" alt="UzTours Logo" style="height:72px;" />
+                    <h2 style="color:#328AEE;margin:0;margin-top:-16px;font-size:28px;letter-spacing:1px;">UzTours</h2>
+                  </div>
+                  <p style="font-size:16px;color:#222;margin-bottom:16px;">${texts.hello}</p>
+                  <p style="font-size:16px;color:#222;margin-bottom:16px;">${texts.yourCode}</p>
+                  <div style="background:#f4f8fb;border-radius:8px;padding:24px;text-align:center;margin:24px 0;">
+                    <span style="color:#328AEE;font-size:40px;font-weight:bold;letter-spacing:8px;">${code}</span>
+                  </div>
+                  <p style="font-size:15px;color:#555;margin-bottom:8px;">${texts.valid}</p>
+                  <p style="font-size:13px;color:#888;margin-bottom:0;">${texts.ignore}</p>
+                  <hr style="margin:32px 0 16px 0;border:none;border-top:1px solid #eee;">
+                  <div style="text-align:center;color:#bbb;font-size:12px;">${texts.auto}</div>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
     `
   };
 } 

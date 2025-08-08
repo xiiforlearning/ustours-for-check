@@ -1,7 +1,8 @@
 import { Dict } from "@/types";
 import PrimaryBtn from "../ui/PrimaryBtn";
 import classes from "./LoginModal.module.css";
-import Image from "next/image";
+import Link from "next/link";
+// import Image from "next/image";
 function Login({
   email,
   setIsGuide,
@@ -94,12 +95,12 @@ function Login({
       )}
       <PrimaryBtn loading={loading} text={dict["continue"]} onClick={submit} />
 
-      <div className={classes.socials}>
+      {/* <div className={classes.socials}>
         <div className={classes.line1}></div>
         <p className={classes.loginBySocial}>{dict["login_by_social"]}</p>
         <div className={classes.line1}></div>
-      </div>
-      <div className={classes.socialsContainer}>
+      </div> */}
+      {/* <div className={classes.socialsContainer}>
         <div className={classes.socialsItem}>
           <Image
             alt="google"
@@ -111,14 +112,18 @@ function Login({
         <div className={classes.socialsItem}>
           <Image alt="apple" width={20} height={20} src={"/images/apple.svg"} />
         </div>
-      </div>
+      </div> */}
 
       <div className={classes.agreement}>
         <p className={classes.agreementText}>
           {dict["agreeByContinue"].split("$")[0]} <br />
-          <span className={classes.link}>
+          <Link href={"/agreement.docx"} className={classes.link}>
             {dict["agreeByContinue"].split("$")[1]}
-          </span>
+          </Link>
+          {dict["agreeByContinue"].split("$")[2]}{" "}
+          <Link href={"/privacy.docx"} className={classes.link}>
+            {dict["agreeByContinue"].split("$")[3]}
+          </Link>
         </p>
       </div>
     </>

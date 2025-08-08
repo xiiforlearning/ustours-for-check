@@ -1,19 +1,35 @@
-import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, Logger, Inject, forwardRef, OnModuleInit } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { BookingsService } from '../bookings/bookings.service';
+import { ToursService } from '../tours/tours.service';
 import { BookingStatus } from '../bookings/dto/create-booking.dto';
 
 @Injectable()
-export class SchedulerService {
+export class SchedulerService implements OnModuleInit {
   private readonly logger = new Logger(SchedulerService.name);
 
   constructor(
     @InjectQueue('booking-expiration') private bookingExpirationQueue: Queue,
     @Inject(forwardRef(() => BookingsService))
     private readonly bookingsService: BookingsService,
+    @Inject(forwardRef(() => ToursService))
+    private readonly toursService: ToursService,
   ) {}
+
+  /**
+   * Очистка прошедших дат при запуске приложения
+   */
+  async onModuleInit(): Promise<void> {
+    try {
+      this.logger.log('Starting initial cleanup of expired tour dates on application startup...');
+      await this.toursService.cleanupExpiredDates();
+      this.logger.log('Successfully completed initial cleanup of expired tour dates');
+    } catch (error) {
+      this.logger.error('Error during initial cleanup of expired tour dates:', error);
+    }
+  }
 
   
   async scheduleBookingExpiration(bookingId: string): Promise<void> {
@@ -54,6 +70,21 @@ export class SchedulerService {
       }
     } catch (error) {
       this.logger.error(`Error processing booking expiration for ${bookingId}:`, error);
+    }
+  }
+
+  /**
+   * Ночная очистка прошедших дат туров
+   * Запускается каждый день в 2:00 утра
+   */
+  @Cron('0 2 * * *')
+  async cleanupExpiredTourDates(): Promise<void> {
+    try {
+      this.logger.log('Starting cleanup of expired tour dates...');
+      await this.toursService.cleanupExpiredDates();
+      this.logger.log('Successfully cleaned up expired tour dates');
+    } catch (error) {
+      this.logger.error('Error cleaning up expired tour dates:', error);
     }
   }
 

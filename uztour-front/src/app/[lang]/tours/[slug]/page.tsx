@@ -1,6 +1,25 @@
 import { getDictionary } from "@/get-dictionary";
 import { Locale } from "@/i18n-config";
 import TourDetail from "@/components/TourDetail";
+import { getExactTours } from "@/api";
+import { Metadata } from "next";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string; lang: Locale }>;
+}): Promise<Metadata> {
+  const fetchedParam = await params;
+  const slug = fetchedParam.slug;
+
+  // fetch post information
+  const res = await getExactTours({ id: slug });
+
+  return {
+    title: res.title,
+    description: res.description,
+  };
+}
 
 export default async function Tour({
   params,
@@ -9,12 +28,14 @@ export default async function Tour({
 }) {
   const fetchedParam = await params;
   const slug = fetchedParam.slug;
-  // const currentExcursion = excursions.find((excursion) => excursion.id == slug);
-  // if (!currentExcursion) {
-  //   return null;
-  // }
-
   const dict = await getDictionary(fetchedParam.lang);
+  const res = await getExactTours({ id: slug });
 
-  return <TourDetail slug={slug} dict={dict} lang={fetchedParam.lang} />;
+  console.log(res);
+
+  return (
+    <>
+      <TourDetail dict={dict} lang={fetchedParam.lang} res={res} />;
+    </>
+  );
 }

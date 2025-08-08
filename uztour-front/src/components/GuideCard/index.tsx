@@ -11,7 +11,6 @@ function GuideCard({
   currentExcursion: ResponseTour;
   lang: Locale;
 }) {
-  console.log(currentExcursion);
   return (
     <div className={classes.conatiner}>
       <div className={classes.top}>
@@ -66,7 +65,7 @@ function GuideCard({
               fill="black"
             />
           </svg>
-          {currentExcursion?.partner ? (
+          {currentExcursion.partner.spokenLanguages?.length ? (
             <p className={classes.featuresText}>
               {currentExcursion.partner.spokenLanguages
                 .map((lang, index) =>
@@ -105,28 +104,34 @@ function GuideCard({
           </p>
         </div>
 
-        <Link
-          href={currentExcursion?.partner?.certificates[0] || "#"}
-          target="_blank"
-          className={classes.features}
-        >
-          <svg
-            width="22"
-            height="22"
-            viewBox="0 0 22 22"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
+        {currentExcursion?.partner?.certificates?.length && (
+          <Link
+            href={
+              currentExcursion?.partner?.certificates?.length
+                ? currentExcursion.partner.certificates[0] || "#"
+                : "#"
+            }
+            target="_blank"
+            className={classes.features}
           >
-            <path
-              d="M5.5 15.5833C5.5 13.75 9.16667 12.7417 11 12.7417C12.8333 12.7417 16.5 13.75 16.5 15.5833V16.5H5.5V15.5833ZM13.75 8.25C13.75 8.97935 13.4603 9.67882 12.9445 10.1945C12.4288 10.7103 11.7293 11 11 11C10.2707 11 9.57118 10.7103 9.05546 10.1945C8.53973 9.67882 8.25 8.97935 8.25 8.25C8.25 7.52065 8.53973 6.82118 9.05546 6.30546C9.57118 5.78973 10.2707 5.5 11 5.5C11.7293 5.5 12.4288 5.78973 12.9445 6.30546C13.4603 6.82118 13.75 7.52065 13.75 8.25ZM2.75 4.58333V17.4167C2.75 17.9029 2.94315 18.3692 3.28697 18.713C3.63079 19.0568 4.0971 19.25 4.58333 19.25H17.4167C17.9029 19.25 18.3692 19.0568 18.713 18.713C19.0568 18.3692 19.25 17.9029 19.25 17.4167V4.58333C19.25 4.0971 19.0568 3.63079 18.713 3.28697C18.3692 2.94315 17.9029 2.75 17.4167 2.75H4.58333C3.56583 2.75 2.75 3.575 2.75 4.58333Z"
-              fill="#328AEE"
-            />
-          </svg>
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 22 22"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M5.5 15.5833C5.5 13.75 9.16667 12.7417 11 12.7417C12.8333 12.7417 16.5 13.75 16.5 15.5833V16.5H5.5V15.5833ZM13.75 8.25C13.75 8.97935 13.4603 9.67882 12.9445 10.1945C12.4288 10.7103 11.7293 11 11 11C10.2707 11 9.57118 10.7103 9.05546 10.1945C8.53973 9.67882 8.25 8.97935 8.25 8.25C8.25 7.52065 8.53973 6.82118 9.05546 6.30546C9.57118 5.78973 10.2707 5.5 11 5.5C11.7293 5.5 12.4288 5.78973 12.9445 6.30546C13.4603 6.82118 13.75 7.52065 13.75 8.25ZM2.75 4.58333V17.4167C2.75 17.9029 2.94315 18.3692 3.28697 18.713C3.63079 19.0568 4.0971 19.25 4.58333 19.25H17.4167C17.9029 19.25 18.3692 19.0568 18.713 18.713C19.0568 18.3692 19.25 17.9029 19.25 17.4167V4.58333C19.25 4.0971 19.0568 3.63079 18.713 3.28697C18.3692 2.94315 17.9029 2.75 17.4167 2.75H4.58333C3.56583 2.75 2.75 3.575 2.75 4.58333Z"
+                fill="#328AEE"
+              />
+            </svg>
 
-          <p className={`${classes.featuresText} ${classes.link}`}>
-            {dict["certifacatedGuide"]}
-          </p>
-        </Link>
+            <p className={`${classes.featuresText} ${classes.link}`}>
+              {dict["certifacatedGuide"]}
+            </p>
+          </Link>
+        )}
       </div>
       <div className={classes.bottom}>
         <p className={classes.description}>

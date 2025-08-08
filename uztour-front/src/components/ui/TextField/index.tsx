@@ -16,7 +16,7 @@ function TextField({
   value: string;
   setValue?: (value: string) => void;
   disabled?: boolean;
-  label?: string;
+  label?: string | ReactNode;
   isPhone?: boolean;
   multiline?: boolean;
   inputRef?: React.RefObject<HTMLInputElement | null>;

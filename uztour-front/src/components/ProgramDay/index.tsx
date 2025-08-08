@@ -3,16 +3,15 @@ import { useState } from "react";
 import classes from "./ProgramDay.module.css";
 import { Locale } from "@/i18n-config";
 import { Dict } from "@/types";
+import { capitalizeFirstLetter } from "@/consts";
 
 function ProgramDay({
-  title,
   description,
   photos,
   lang,
   index,
   dict,
 }: {
-  title: string;
   description: string;
   photos: string[];
   lang: Locale;
@@ -21,10 +20,13 @@ function ProgramDay({
 }) {
   const [open, setOpen] = useState(index != 1);
   lang;
+
   return (
     <div
       onClick={() => setOpen(!open)}
-      style={{ height: open ? "74px" : "auto" }}
+      style={{
+        height: open ? 75 : "auto",
+      }}
       className={classes.container}
     >
       <div className={classes.header}>
@@ -32,7 +34,6 @@ function ProgramDay({
           <div className={classes.period}>
             {index + 1} {dict["day"]}
           </div>
-          <div className={classes.title}>{title}</div>
         </div>
         <div className={classes.arrowWrapper}>
           <svg
@@ -50,7 +51,12 @@ function ProgramDay({
         </div>
       </div>
       <div className={classes.list}>
-        <p className={classes.block}>{description}</p>
+        <p
+          dangerouslySetInnerHTML={{
+            __html: capitalizeFirstLetter(description),
+          }}
+          className={classes.block}
+        ></p>
       </div>
       <div className={classes.listPhotes}>
         {photos.map((item) => (

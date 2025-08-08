@@ -46,6 +46,39 @@
     gap: 30px;
 }
 
+.background{
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;   
+    padding: 20px; 
+}
+.modal{
+    width: 100%;
+    max-width: 379px;
+    background: #fff;
+    border-radius: 20px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    align-items: center;
+}
+.successTitle{
+    color: #242D3F;
+    font-weight: 500;
+    text-align: center;
+    font-size: 18px;
+}
+.detail{
+    color: #848484;
+    font-size: 16px;
+    text-align: center;
+}
+
 @media (max-width:780px) {
     .content{
         flex-direction: column-reverse;

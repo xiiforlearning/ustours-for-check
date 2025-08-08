@@ -1,9 +1,7 @@
 import Image from "next/image";
 import TextField from "../ui/TextField";
 import classes from "./LoginModal.module.css";
-import { useState } from "react";
 import Select from "../ui/Select";
-import Checkbox from "../ui/Checkbox";
 import PrimaryBtn from "../ui/PrimaryBtn";
 import { Dict, GuideSubmitData } from "@/types";
 import { converFirstLetterToUpperCase } from "@/consts";
@@ -22,11 +20,6 @@ function GuideForm({
   dict: Dict;
   loading: boolean;
 }) {
-  const [checked, setChecked] = useState({
-    privacy: false,
-    agreement: false,
-  });
-
   const options = [
     converFirstLetterToUpperCase(dict["guide"]),
     converFirstLetterToUpperCase(dict["company"]),
@@ -134,40 +127,9 @@ function GuideForm({
           )}
         </div>
       </div>
-      <div className={classes.policy}>
-        <Checkbox
-          onChange={(e) =>
-            setChecked({ ...checked, privacy: e.target.checked })
-          }
-          checked={checked.privacy}
-          id="policy1"
-        />
-        <p className={classes.policyText}>
-          {dict["iAgree"].split("$")[0]}{" "}
-          <span>{dict["iAgree"].split("$")[1]}</span>,{" "}
-          {dict["iAgree"].split("$")[2]}{" "}
-          <span>{dict["iAgree"].split("$")[3]}</span>{" "}
-          {dict["iAgree"].split("$")[4]}
-        </p>
-      </div>
-      <div className={classes.policy}>
-        <Checkbox
-          onChange={(e) =>
-            setChecked({ ...checked, agreement: e.target.checked })
-          }
-          checked={checked.agreement}
-          id="policy2"
-        />
-        <p className={classes.policyText}>
-          {dict["iAgreePrivacy"].split("$")[0]}{" "}
-          <span>{dict["iAgreePrivacy"].split("$")[1]}</span>
-        </p>
-      </div>
       <PrimaryBtn
         loading={loading}
         disabled={
-          !checked.privacy ||
-          !checked.agreement ||
           !formData.phone ||
           !formData.lastName ||
           !formData.name ||

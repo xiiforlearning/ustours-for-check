@@ -132,6 +132,11 @@ export class CreateTourDto {
   @IsNumber()
   price?: number | null;
 
+  @ApiProperty({ required: false, nullable: true, description: 'Цена для групповых туров' })
+  @IsOptional()
+  @IsNumber()
+  group_price?: number | undefined;
+
   @ApiProperty({ required: false, nullable: true })
   @IsOptional()
   @IsString()

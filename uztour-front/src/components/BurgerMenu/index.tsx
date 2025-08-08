@@ -1,6 +1,6 @@
 import Image from "next/image";
 import classes from "./BurgerMenu.module.css";
-import { useState } from "react";
+// import { useState } from "react";
 import { Locale } from "@/i18n-config";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
@@ -19,7 +19,7 @@ function BurgerMenu({
   user: 0 | UserType | null;
   setBurgerOpen: (value: boolean) => void;
 }) {
-  const [selectedCurrency, setSelectedCurrency] = useState("USD");
+  // const [selectedCurrency, setSelectedCurrency] = useState("USD");
   const pathname = usePathname();
   const setUser = useStore((state) => state.setUser);
 
@@ -162,7 +162,7 @@ function BurgerMenu({
 
             <p className={classes.navItemText}>{dict["header.excursions"]}</p>
           </Link>
-          <Link
+          {/* <Link
             onClick={() => setBurgerOpen(false)}
             href={`/${lang}/transfer`}
             className={classes.navItem}
@@ -190,13 +190,13 @@ function BurgerMenu({
             <p className={classes.navItemText}>
               {dict["header.order_transfer"]}
             </p>
-          </Link>
+          </Link> */}
         </>
       )}
 
       {user && user.user.type !== "partner" && (
         <>
-          <Link
+          {/* <Link
             onClick={() => setBurgerOpen(false)}
             href={`/${lang}/transfer`}
             className={classes.navItem}
@@ -215,8 +215,8 @@ function BurgerMenu({
             </svg>
 
             <p className={classes.navItemText}>{dict["yourTours"]}</p>
-          </Link>
-          <Link
+          </Link> */}
+          {/* <Link
             onClick={() => setBurgerOpen(false)}
             href={`/${lang}/transfer`}
             className={classes.navItem}
@@ -242,7 +242,7 @@ function BurgerMenu({
             </svg>
 
             <p className={classes.navItemText}>{dict["header.transfer"]}</p>
-          </Link>
+          </Link> */}
         </>
       )}
       {user && (
@@ -303,7 +303,7 @@ function BurgerMenu({
               ))}
             </div>
           </div>
-          <div style={{ height: 20 }}></div>
+          {/* <div style={{ height: 20 }}></div>
           <div>
             <p className={classes.label}>{dict["currency"]}:</p>
             <div className={classes.horizontalList}>
@@ -340,7 +340,7 @@ function BurgerMenu({
                 CNY
               </div>
             </div>
-          </div>
+          </div> */}
           <div style={{ height: 30 }}></div>
           <div className={classes.contact}>
             <svg
@@ -371,7 +371,7 @@ function BurgerMenu({
               />
             </svg>
 
-            <p className={classes.contactText}>uztours@gmail.com</p>
+            <p className={classes.contactText}>uztoursmail@gmail.com</p>
           </div>
         </>
       )}

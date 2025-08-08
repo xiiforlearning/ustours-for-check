@@ -27,6 +27,10 @@
     color: #848484;
     font-size: 14px;
     line-height: 22px;
+    transition: 0.3s;
+}
+.footerText:hover{  
+    color: #328AEE;
 }
 .logo{
     margin-bottom: 50px;

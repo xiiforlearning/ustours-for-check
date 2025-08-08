@@ -12,6 +12,7 @@ import { langs } from "@/consts";
 import Cropper, { Area } from "react-easy-crop";
 import getCroppedImg from "./getCroppedImg";
 import PrimaryBtn from "../ui/PrimaryBtn";
+import { useRouter } from "next/navigation";
 
 type AllowedFile = File & {
   // narrow MIME types if you like; optional
@@ -32,6 +33,7 @@ function GuideProfile({ dict }: { dict: Dict }) {
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
   const [showCropper, setShowCropper] = useState(false);
+  const router = useRouter();
 
   const onCropComplete = useCallback((_: Area, croppedAreaPixels: Area) => {
     setCroppedAreaPixels(croppedAreaPixels);
@@ -62,6 +64,8 @@ function GuideProfile({ dict }: { dict: Dict }) {
     about?: string;
     avatar?: string;
     certificate?: string[];
+    telegram?: string | null;
+    whatsapp?: string | null;
   } | null>(null);
   const [editData, setEditData] = useState<{
     yearsOfExperience?: number;
@@ -69,6 +73,8 @@ function GuideProfile({ dict }: { dict: Dict }) {
     about?: string;
     avatar?: string;
     certificate?: string[];
+    telegram?: string | null;
+    whatsapp?: string | null;
   } | null>(null);
 
   const pressEditing = async () => {
@@ -82,6 +88,8 @@ function GuideProfile({ dict }: { dict: Dict }) {
         about?: string;
         avatar?: string;
         certificates?: string[];
+        telegram?: string;
+        whatsapp?: string;
       } = {};
       if (editData?.yearsOfExperience) {
         changedData["yearsOfExperience"] = editData?.yearsOfExperience;
@@ -91,6 +99,12 @@ function GuideProfile({ dict }: { dict: Dict }) {
       }
       if (editData?.about) {
         changedData["about"] = editData?.about;
+      }
+      if (editData?.telegram) {
+        changedData["telegram"] = editData?.telegram;
+      }
+      if (editData?.whatsapp) {
+        changedData["whatsapp"] = editData?.whatsapp;
       }
 
       setIsLoading(true);
@@ -147,6 +161,8 @@ function GuideProfile({ dict }: { dict: Dict }) {
               certificate: changedData.certificates?.length
                 ? changedData.certificates
                 : actualData?.certificate,
+              telegram: changedData.telegram,
+              whatsapp: changedData.whatsapp,
             });
             setEditData({
               yearsOfExperience: changedData.yearsOfExperience
@@ -162,6 +178,8 @@ function GuideProfile({ dict }: { dict: Dict }) {
               certificate: changedData.certificates?.length
                 ? changedData.certificates
                 : actualData?.certificate,
+              telegram: changedData.telegram,
+              whatsapp: changedData.whatsapp,
             });
             setIsEditing(false);
             setIsLoading(false);
@@ -196,6 +214,8 @@ function GuideProfile({ dict }: { dict: Dict }) {
         certificate: guide.partner.certificates
           ? guide.partner.certificates
           : [],
+        telegram: guide.partner.telegram,
+        whatsapp: guide.partner.whatsapp,
       });
 
       setEditData({
@@ -208,6 +228,8 @@ function GuideProfile({ dict }: { dict: Dict }) {
         certificate: guide.partner.certificates
           ? guide.partner.certificates
           : [],
+        telegram: guide.partner.telegram,
+        whatsapp: guide.partner.whatsapp,
       });
     }
   }, [guide]);
@@ -236,6 +258,14 @@ function GuideProfile({ dict }: { dict: Dict }) {
 
   return (
     <>
+      <div className={classes.myTours}>
+        <PrimaryBtn
+          onClick={() => {
+            router.push("/guide-tours");
+          }}
+          text="Мои туры"
+        />
+      </div>
       <div className={classes.editBlock}>
         {isEditing && (
           <div
@@ -434,7 +464,7 @@ function GuideProfile({ dict }: { dict: Dict }) {
               {isEditing && (
                 <div>
                   <p className={classes.labelSelect}>
-                    Языки проведения экскурсий
+                    Языки, на которых проводятся экскурсии
                   </p>
                   <Select
                     placeholder="Добавить языкы"
@@ -536,7 +566,7 @@ function GuideProfile({ dict }: { dict: Dict }) {
 
                   <input
                     type="file"
-                    accept=".pdf,.doc,.docx"
+                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                     //@ts-expect-error aaa
                     onChange={handleChange}
                     id="fileUpload"
@@ -564,6 +594,52 @@ function GuideProfile({ dict }: { dict: Dict }) {
                     ) : (
                       <p>Нет сертификатов</p>
                     )}
+                  </div>
+                </>
+              )}
+            </div>
+            <div className={classes.line}></div>
+            <div className={classes.infoItem}>
+              {isEditing && (
+                <div>
+                  <TextField
+                    value={editData?.telegram || ""}
+                    label="Telegram"
+                    placeHolder="@username или ссылка"
+                    setValue={(value: string) =>
+                      setEditData({ ...editData, telegram: value })
+                    }
+                  />
+                </div>
+              )}
+              {!isEditing && (
+                <>
+                  <p className={classes.label}>Telegram</p>
+                  <div className={classes.infoText}>
+                    {actualData?.telegram ? actualData.telegram : "Пусто"}
+                  </div>
+                </>
+              )}
+            </div>
+            <div className={classes.line}></div>
+            <div className={classes.infoItem}>
+              {isEditing && (
+                <div>
+                  <TextField
+                    value={editData?.whatsapp || ""}
+                    label="WhatsApp"
+                    placeHolder="Номер или ссылка"
+                    setValue={(value: string) =>
+                      setEditData({ ...editData, whatsapp: value })
+                    }
+                  />
+                </div>
+              )}
+              {!isEditing && (
+                <>
+                  <p className={classes.label}>WhatsApp</p>
+                  <div className={classes.infoText}>
+                    {actualData?.whatsapp ? actualData.whatsapp : "Пусто"}
                   </div>
                 </>
               )}
